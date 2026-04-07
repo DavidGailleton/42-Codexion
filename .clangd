@@ -1,0 +1,19 @@
+CompileFlags:
+  Add: 
+    - "-std=c89"
+    - "-Wall"
+    - "-Wextra"
+    - "-Werror"
+    - "-pthread"
+    - "-Icoders/inc"
+
+Diagnostics:
+  ClangTidy:
+    Add: []
+    Remove: ["*"]
+
+Hover:
+  ShowAKA: No
+
+InlayHints:
+  Enabled: No
