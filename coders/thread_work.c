@@ -14,6 +14,7 @@ static int has_priority(t_coder *coder, t_coder *opponent, t_config *config)
 		else
 			return (0);
 	}
+	return (0);
 }
 
 static void request_dongle(t_coder *coder, t_dongle *dongle, t_config *config)
@@ -29,7 +30,6 @@ static void request_dongle(t_coder *coder, t_dongle *dongle, t_config *config)
 				else
 				{
 					pthread_cond_broadcast(&dongle->cond);
-					pthread_cond_wait(&dongle->cond, &dongle->lock);
 				}
 			}
 			else if (config->scheduler == FIFO)
@@ -41,9 +41,9 @@ static void request_dongle(t_coder *coder, t_dongle *dongle, t_config *config)
 			else
 			{
 				dongle->requester = coder;
-				pthread_cond_wait(&dongle->cond, &dongle->lock);
 			}
 		}
+		pthread_cond_wait(&dongle->cond, &dongle->lock);
 	}
 }
 
@@ -64,11 +64,11 @@ void *thread_work(void *arg)
 	while (increase_compiled_if_remain(config))
 	{
 		request_dongle(coder, coder->dongle_r, config);
-		printf("%d %d has taken a dongle", get_process_time(config), coder->id);
+		printf("%d %d has taken a dongle\n", get_process_time(config), coder->id);
 		if (config->number_of_coders > 1)
 		{
 			request_dongle(coder, coder->dongle_l, config);
-			printf("%d %d has taken a dongle", get_process_time(config), coder->id);
+			printf("%d %d has taken a dongle\n", get_process_time(config), coder->id);
 		}
 		compile_process(config, coder);
 		release_dongle(coder->dongle_r);

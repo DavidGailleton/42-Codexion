@@ -25,6 +25,6 @@ int compile_process(t_config *config, t_coder *coder)
 {
 	compiling(coder, config);
 	refactoring(coder, config);
-	refactoring(coder, config);
+	debugging(coder, config);
 	return (0);
 }

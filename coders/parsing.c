@@ -1,4 +1,5 @@
 #include "codexion.h"
+#include <pthread.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -45,6 +46,8 @@ static t_config *get_config(char **av)
 		free(config);
 		return (NULL);
 	}
+	pthread_cond_init(&config->cond, NULL);
+	pthread_mutex_init(&config->lock, NULL);
 	return (config);
 }
 

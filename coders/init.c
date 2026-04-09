@@ -16,7 +16,7 @@ static t_dongle *create_dongle(int id)
 	return (dongle);
 }
 
-static t_coder *create_coder(int id, t_coder *prev_coder)
+static t_coder *create_coder(int id, t_coder *prev_coder, t_config *config)
 {
 	t_coder *coder;
 
@@ -40,6 +40,7 @@ static t_coder *create_coder(int id, t_coder *prev_coder)
 		coder->dongle_l = NULL;
 	coder->pre = prev_coder;
 	coder->next = NULL;
+	coder->config = config;
 	return (coder);
 }
 
@@ -52,13 +53,12 @@ static t_coder *create_coders(t_config *config, t_coder *first_coder)
 	temp = first_coder;
 	while (++i < config->number_of_coders)
 	{
-		temp = create_coder(i, temp);
+		temp = create_coder(i, temp, config);
 		if (!temp)
 		{
 			free_coders(first_coder);
 			return (NULL);
 		}
-		temp->config = config;
 	}
 	if (config->number_of_coders > 1)
 	{
@@ -76,7 +76,7 @@ t_coder *init_coders(t_config *config)
 	first_coder = NULL;
 	if (config->number_of_coders > 0)
 	{
-		first_coder = create_coder(0, NULL);
+		first_coder = create_coder(0, NULL, config);
 		if (!first_coder)
 			return (NULL);
 	}

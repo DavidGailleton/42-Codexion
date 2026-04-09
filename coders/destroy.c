@@ -31,6 +31,8 @@ void free_coders(t_coder *coders)
 int destroy(t_coder *coders, t_config *config)
 {
 	free_coders(coders);
-
+	pthread_mutex_destroy(&config->lock);
+	pthread_cond_destroy(&config->cond);
 	free(config);
+	return (1);
 }

@@ -13,6 +13,11 @@ int start_coders(t_coder *coders, t_config *config)
 		pthread_create(&coders->thread, NULL, thread_work, coders);
 		coders = coders->next;
 	}
+	i = -1;
+	while (++i < config->number_of_coders)
+	{
+		pthread_join(coders->thread, NULL);
+	}
 	return (1);
 }
 
@@ -27,6 +32,7 @@ int main(int ac, char **av)
 		fprintf(stderr, "%s\n", "An error occurred during parsing");
 		return (1);
 	}
+	fprintf(stderr, "%p\n", config);
 	coders = init_coders(config);
 	if (!coders)
 	{
@@ -35,9 +41,5 @@ int main(int ac, char **av)
 		return (1);
 	}
 	start_coders(coders, config);
-	while (remain_compile(config))
-	{
-	}
-	free_coders(coders);
-	free(config);
+	destroy(coders, config);
 }

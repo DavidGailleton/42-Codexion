@@ -1,8 +1,6 @@
 #ifndef CODEXION_H
 #define CODEXION_H
 
-#include <bits/pthreadtypes.h>
-#include <bits/types/struct_timeval.h>
 #include <sys/time.h>
 #include <sys/types.h>
 
@@ -22,6 +20,7 @@ typedef struct s_config
 	suseconds_t     time_to_refactor;
 	suseconds_t     programm_start_time;
 	pthread_mutex_t lock;
+	pthread_cond_t  cond;
 } t_config;
 
 typedef struct s_dongle
@@ -50,10 +49,10 @@ void      free_coders(t_coder *coders);
 t_coder  *init_coders(t_config *config);
 int       compile_process(t_config *config, t_coder *coder);
 void     *thread_work(void *arg);
+int       destroy(t_coder *coders, t_config *config);
 
 int get_process_time(t_config *config);
 int get_remain_before_burnout(t_config *config, t_coder *coder);
 int increase_compiled_if_remain(t_config *config);
-int remain_compile(t_config *config);
 
 #endif
