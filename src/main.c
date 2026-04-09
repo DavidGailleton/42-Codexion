@@ -1,5 +1,6 @@
-#include "inc/codexion.h"
+#include "codexion.h"
 #include <stdio.h>
+#include <stdlib.h>
 
 int main(int ac, char **av)
 {
@@ -15,8 +16,10 @@ int main(int ac, char **av)
 	coders = init_coders(config);
 	if (!coders)
 	{
+		free(config);
 		fprintf(stderr, "%s\n", "An error occurred during coders initialization");
 		return (1);
 	}
 	free_coders(coders);
+	free(config);
 }

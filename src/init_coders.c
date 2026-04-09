@@ -1,4 +1,5 @@
-#include "inc/codexion.h"
+#include "codexion.h"
+#include <pthread.h>
 #include <stdlib.h>
 
 static t_dongle *create_dongle(int id)
@@ -7,6 +8,7 @@ static t_dongle *create_dongle(int id)
 
 	dongle = malloc(sizeof(t_dongle));
 	dongle->id = id;
+	pthread_mutex_init(&dongle->lock, NULL);
 	return (dongle);
 }
 
@@ -40,9 +42,15 @@ void free_coders(t_coder *coders)
 {
 	t_coder *temp;
 
+	if (coders->pre)
+	{
+		temp = coders->pre;
+		temp->next = NULL;
+	}
 	while (coders)
 	{
 		temp = coders->next;
+		pthread_mutex_destroy(&coders->dongle_r->lock);
 		free(coders->dongle_r);
 		free(coders);
 		coders = temp;
@@ -78,9 +86,12 @@ t_coder *init_coders(t_config *config)
 {
 	t_coder *first_coder;
 
+	first_coder = NULL;
 	if (config->number_of_coders > 0)
+	{
 		first_coder = create_coder(0, NULL);
-	if (!first_coder)
-		return (NULL);
+		if (!first_coder)
+			return (NULL);
+	}
 	return (create_coders(config, first_coder));
 }

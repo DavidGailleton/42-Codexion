@@ -1,6 +1,8 @@
 #ifndef CODEXION_H
 #define CODEXION_H
 
+#include <bits/pthreadtypes.h>
+
 typedef struct s_config
 {
 	int number_of_coders;
@@ -10,14 +12,14 @@ typedef struct s_config
 	int time_to_refactor;
 	int number_of_compiles_required;
 	int dongle_cooldown;
-	// fifo: 0; edf: 1;
+	/* fifo: 0; edf: 1; */
 	int scheduler;
 } t_config;
 
 typedef struct s_dongle
 {
-	int id;
-	int last_compile;
+	int             id;
+	pthread_mutex_t lock;
 
 } t_dongle;
 
@@ -30,6 +32,7 @@ typedef struct s_coder
 	t_dongle *dongle_l;
 	void     *next;
 	void     *pre;
+	pthread_t thread;
 } t_coder;
 
 t_config *parsing(int ac, char **av);

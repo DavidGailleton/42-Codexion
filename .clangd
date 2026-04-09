@@ -5,7 +5,7 @@ CompileFlags:
     - "-Wextra"
     - "-Werror"
     - "-pthread"
-    - "-Icoders/inc"
+    - "-I/home/dgaillet/Documents/codexion/inc"
 
 Diagnostics:
   ClangTidy:
