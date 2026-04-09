@@ -34,11 +34,12 @@ static t_config *get_config(char **av)
 	config->time_to_debug = atoi(av[4]);
 	config->time_to_refactor = atoi(av[5]);
 	config->number_of_compiles_required = atoi(av[6]);
+	config->compiled = 0;
 	config->dongle_cooldown = atoi(av[7]);
 	if (!strcmp(av[8], "fifo"))
-		config->scheduler = 0;
+		config->scheduler = FIFO;
 	else if (!strcmp(av[8], "edf"))
-		config->scheduler = 1;
+		config->scheduler = EDF;
 	else
 	{
 		free(config);

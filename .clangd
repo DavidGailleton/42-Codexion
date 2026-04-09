@@ -1,11 +1,10 @@
 CompileFlags:
   Add: 
-    - "-std=c89"
     - "-Wall"
     - "-Wextra"
     - "-Werror"
     - "-pthread"
-    - "-I/home/dgaillet/Documents/codexion/inc"
+    - "-I/home/dgaillet/Documents/codexion/coders"
 
 Diagnostics:
   ClangTidy:

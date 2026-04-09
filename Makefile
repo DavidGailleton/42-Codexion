@@ -2,7 +2,7 @@ NAME			= codexion
 CC				= cc
 MAKE			+= --no-print-directory
 CCFLAGS		= -Wall -Wextra -Werror -pthread -MMD -MP
-CCFLAGS		+= -Iinc -g3 -DEBUG=1
+CCFLAGS		+= -Icoders -g3 -DEBUG=1
 LDFLAGS		= -Llibft -lunit -lft -L.
 
 SRC				= coders/main.c \

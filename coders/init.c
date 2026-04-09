@@ -7,7 +7,11 @@ static t_dongle *create_dongle(int id)
 	t_dongle *dongle;
 
 	dongle = malloc(sizeof(t_dongle));
+	if (!dongle)
+		return (NULL);
 	dongle->id = id;
+	dongle->requester = NULL;
+	pthread_cond_init(&dongle->cond, NULL);
 	pthread_mutex_init(&dongle->lock, NULL);
 	return (dongle);
 }
@@ -20,6 +24,7 @@ static t_coder *create_coder(int id, t_coder *prev_coder)
 	if (!coder)
 		return (NULL);
 	coder->id = id;
+	coder->dongle_r = NULL;
 	coder->dongle_r = create_dongle(id);
 	if (!coder->dongle_r)
 	{
@@ -38,25 +43,6 @@ static t_coder *create_coder(int id, t_coder *prev_coder)
 	return (coder);
 }
 
-void free_coders(t_coder *coders)
-{
-	t_coder *temp;
-
-	if (coders->pre)
-	{
-		temp = coders->pre;
-		temp->next = NULL;
-	}
-	while (coders)
-	{
-		temp = coders->next;
-		pthread_mutex_destroy(&coders->dongle_r->lock);
-		free(coders->dongle_r);
-		free(coders);
-		coders = temp;
-	}
-}
-
 static t_coder *create_coders(t_config *config, t_coder *first_coder)
 {
 	t_coder *temp;
@@ -72,6 +58,7 @@ static t_coder *create_coders(t_config *config, t_coder *first_coder)
 			free_coders(first_coder);
 			return (NULL);
 		}
+		temp->config = config;
 	}
 	if (config->number_of_coders > 1)
 	{
