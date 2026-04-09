@@ -13,6 +13,7 @@ int start_coders(t_coder *coders, t_config *config)
 		pthread_create(&coders->thread, NULL, thread_work, coders);
 		coders = coders->next;
 	}
+	return (1);
 }
 
 int main(int ac, char **av)

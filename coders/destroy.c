@@ -21,7 +21,6 @@ void free_coders(t_coder *coders)
 	while (coders)
 	{
 		temp = coders->next;
-		pthread_mutex_destroy(&coders->dongle_r->lock);
 		if (coders->dongle_r)
 			free_dongle(coders->dongle_r);
 		free(coders);
@@ -31,4 +30,7 @@ void free_coders(t_coder *coders)
 
 int destroy(t_coder *coders, t_config *config)
 {
+	free_coders(coders);
+
+	free(config);
 }

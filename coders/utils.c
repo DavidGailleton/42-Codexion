@@ -20,19 +20,6 @@ int get_remain_before_burnout(t_config *config, t_coder *coder)
 	return (coder->last_compile - (time.tv_usec + config->time_to_burnout));
 }
 
-void increase_compiled(t_config *config)
-{
-	while (1)
-	{
-		if (!pthread_mutex_lock(&config->lock))
-		{
-			config->compiled++;
-			pthread_mutex_unlock(&config->lock);
-			return;
-		}
-	}
-}
-
 int remain_compile(t_config *config)
 {
 	int res;
@@ -44,6 +31,21 @@ int remain_compile(t_config *config)
 			res = config->compiled < config->number_of_compiles_required;
 			pthread_mutex_unlock(&config->lock);
 			return (res);
+		}
+	}
+}
+
+int increase_compiled_if_remain(t_config *config)
+{
+	while (1)
+	{
+		if (!pthread_mutex_lock(&config->lock))
+		{
+			if (!remain_compile(config))
+				return (0);
+			config->compiled++;
+			pthread_mutex_unlock(&config->lock);
+			return (1);
 		}
 	}
 }

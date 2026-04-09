@@ -32,6 +32,12 @@ static void request_dongle(t_coder *coder, t_dongle *dongle, t_config *config)
 					pthread_cond_wait(&dongle->cond, &dongle->lock);
 				}
 			}
+			else if (config->scheduler == FIFO)
+			{
+				dongle->requester = coder;
+				pthread_mutex_unlock(&dongle->lock);
+				return;
+			}
 			else
 			{
 				dongle->requester = coder;
@@ -55,9 +61,8 @@ void *thread_work(void *arg)
 
 	coder = (t_coder *) arg;
 	config = coder->config;
-	while (remain_compile(config))
+	while (increase_compiled_if_remain(config))
 	{
-		increase_compiled(config);
 		request_dongle(coder, coder->dongle_r, config);
 		printf("%d %d has taken a dongle", get_process_time(config), coder->id);
 		if (config->number_of_coders > 1)

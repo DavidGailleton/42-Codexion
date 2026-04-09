@@ -2,12 +2,16 @@ NAME			= codexion
 CC				= cc
 MAKE			+= --no-print-directory
 CCFLAGS		= -Wall -Wextra -Werror -pthread -MMD -MP
-CCFLAGS		+= -Icoders -g3 -DEBUG=1
+CCFLAGS		+= -Icoders -g3 -DDEBUG=1
 LDFLAGS		= -Llibft -lunit -lft -L.
 
 SRC				= coders/main.c \
-						coders/init_coders.c \
-						coders/parsing.c
+						coders/init.c \
+						coders/parsing.c \
+						coders/compile_process.c \
+						coders/destroy.c \
+						coders/thread_work.c \
+						coders/utils.c
 OBJ				= $(SRC:.c=.o)
 
 
