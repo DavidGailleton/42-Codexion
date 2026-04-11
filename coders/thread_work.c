@@ -9,7 +9,7 @@ static int has_priority(t_coder *coder, t_coder *opponent, t_config *config)
 		return 0;
 	if (config->scheduler == EDF)
 	{
-		if (get_remain_before_burnout(config, coder) < get_remain_before_burnout(config, opponent))
+		if (get_remain_before_burnout(config, coder) <= get_remain_before_burnout(config, opponent))
 			return (1);
 		else
 			return (0);
@@ -21,37 +21,37 @@ static void request_dongle(t_coder *coder, t_dongle *dongle, t_config *config)
 {
 	while (1)
 	{
-		if (!pthread_mutex_lock(&dongle->lock))
+		while (pthread_mutex_lock(&dongle->lock))
 		{
-			if (dongle->requester)
+		}
+		if (dongle->requester)
+		{
+			if (has_priority(coder, dongle->requester, config))
 			{
-				if (has_priority(coder, dongle->requester, config))
-					return;
-				else
-				{
-					pthread_cond_broadcast(&dongle->cond);
-				}
-			}
-			else if (config->scheduler == FIFO)
-			{
-				dongle->requester = coder;
-				pthread_mutex_unlock(&dongle->lock);
+				printf("%d %d has taken a dongle\n", get_process_time(config),
+				       coder->id);
 				return;
 			}
-			else
-			{
-				dongle->requester = coder;
-			}
 		}
+		else if (config->scheduler == FIFO)
+		{
+			dongle->requester = coder;
+			printf("%d %d has taken a dongle\n", get_process_time(config), coder->id);
+			return;
+		}
+		else
+			dongle->requester = coder;
+		pthread_mutex_unlock(&dongle->lock);
 		pthread_cond_wait(&dongle->cond, &dongle->lock);
+		pthread_cond_broadcast(&dongle->cond);
 	}
 }
 
 static void release_dongle(t_dongle *dongle)
 {
 	dongle->requester = NULL;
-	pthread_cond_broadcast(&dongle->cond);
 	pthread_mutex_unlock(&dongle->lock);
+	pthread_cond_broadcast(&dongle->cond);
 }
 
 void *thread_work(void *arg)
@@ -61,14 +61,26 @@ void *thread_work(void *arg)
 
 	coder = (t_coder *) arg;
 	config = coder->config;
+	while (config->start == 0)
+	{
+	}
 	while (increase_compiled_if_remain(config))
 	{
-		request_dongle(coder, coder->dongle_r, config);
-		printf("%d %d has taken a dongle\n", get_process_time(config), coder->id);
-		if (config->number_of_coders > 1)
+		if (coder->id % 2)
 		{
-			request_dongle(coder, coder->dongle_l, config);
-			printf("%d %d has taken a dongle\n", get_process_time(config), coder->id);
+			request_dongle(coder, coder->dongle_r, config);
+			if (config->number_of_coders > 1)
+			{
+				request_dongle(coder, coder->dongle_l, config);
+			}
+		}
+		else
+		{
+			if (config->number_of_coders > 1)
+			{
+				request_dongle(coder, coder->dongle_l, config);
+			}
+			request_dongle(coder, coder->dongle_r, config);
 		}
 		compile_process(config, coder);
 		release_dongle(coder->dongle_r);

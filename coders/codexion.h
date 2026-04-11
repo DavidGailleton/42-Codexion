@@ -1,6 +1,7 @@
 #ifndef CODEXION_H
 #define CODEXION_H
 
+#include <bits/types/struct_timeval.h>
 #include <sys/time.h>
 #include <sys/types.h>
 
@@ -13,14 +14,15 @@ typedef struct s_config
 	int             number_of_coders;
 	int             number_of_compiles_required;
 	int             compiled;
+	int             start;
 	suseconds_t     dongle_cooldown;
 	suseconds_t     time_to_burnout;
 	suseconds_t     time_to_compile;
 	suseconds_t     time_to_debug;
 	suseconds_t     time_to_refactor;
-	suseconds_t     programm_start_time;
 	pthread_mutex_t lock;
 	pthread_cond_t  cond;
+	struct timeval  programm_start_time;
 } t_config;
 
 typedef struct s_dongle
@@ -33,15 +35,15 @@ typedef struct s_dongle
 
 typedef struct s_coder
 {
-	int         id;
-	suseconds_t created_at;
-	int         last_compile;
-	t_dongle   *dongle_r;
-	t_dongle   *dongle_l;
-	void       *next;
-	void       *pre;
-	pthread_t   thread;
-	t_config   *config;
+	int            id;
+	suseconds_t    created_at;
+	struct timeval last_compile;
+	t_dongle      *dongle_r;
+	t_dongle      *dongle_l;
+	void          *next;
+	void          *pre;
+	pthread_t      thread;
+	t_config      *config;
 } t_coder;
 
 t_config *parsing(int ac, char **av);

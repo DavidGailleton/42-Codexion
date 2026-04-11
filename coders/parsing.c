@@ -37,6 +37,7 @@ static t_config *get_config(char **av)
 	config->number_of_compiles_required = atoi(av[6]);
 	config->compiled = 0;
 	config->dongle_cooldown = atoi(av[7]);
+	config->start = 0;
 	if (!strcmp(av[8], "fifo"))
 		config->scheduler = FIFO;
 	else if (!strcmp(av[8], "edf"))

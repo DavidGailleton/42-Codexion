@@ -2,6 +2,7 @@
 #include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/time.h>
 
 int start_coders(t_coder *coders, t_config *config)
 {
@@ -13,6 +14,8 @@ int start_coders(t_coder *coders, t_config *config)
 		pthread_create(&coders->thread, NULL, thread_work, coders);
 		coders = coders->next;
 	}
+	gettimeofday(&config->programm_start_time, NULL);
+	config->start = 1;
 	i = -1;
 	while (++i < config->number_of_coders)
 	{
