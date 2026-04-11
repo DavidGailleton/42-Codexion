@@ -53,8 +53,8 @@ int       compile_process(t_config *config, t_coder *coder);
 void     *thread_work(void *arg);
 int       destroy(t_coder *coders, t_config *config);
 
-int get_process_time(t_config *config);
-int get_remain_before_burnout(t_config *config, t_coder *coder);
-int increase_compiled_if_remain(t_config *config);
+long long get_process_time(t_config *config);
+long long get_remain_before_burnout(t_config *config, t_coder *coder);
+int       increase_compiled_if_remain(t_config *config);
 
 #endif

@@ -20,6 +20,7 @@ int start_coders(t_coder *coders, t_config *config)
 	while (++i < config->number_of_coders)
 	{
 		pthread_join(coders->thread, NULL);
+		coders = coders->next;
 	}
 	return (1);
 }
@@ -39,7 +40,7 @@ int main(int ac, char **av)
 	coders = init_coders(config);
 	if (!coders)
 	{
-		free(config);
+		destroy(coders, config);
 		fprintf(stderr, "%s\n", "An error occurred during coders initialization");
 		return (1);
 	}
