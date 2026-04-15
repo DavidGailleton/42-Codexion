@@ -6,47 +6,18 @@
 #include <time.h>
 #include <unistd.h>
 
-static int one_coder_burned_out(t_coder *coders)
+static int has_priority(t_coder *coder, t_config *config, t_dongle *dongle)
 {
-	t_coder *first;
-
-	first = coders;
-	pthread_mutex_lock(&coders->lock);
-	if (coders->burned_out)
-	{
-		pthread_mutex_unlock(&coders->lock);
+	if (config->scheduler == FIFO)
 		return (1);
-	}
-	pthread_mutex_unlock(&coders->lock);
-	coders = coders->next;
-	while (coders && coders != first)
+	if (config->scheduler == EDF && dongle->requester != NULL)
 	{
-		pthread_mutex_lock(&coders->lock);
-		if (coders->burned_out)
-		{
-			pthread_mutex_unlock(&coders->lock);
-			return (1);
-		}
-		pthread_mutex_unlock(&coders->lock);
-		coders = coders->next;
-	}
-	return (0);
-}
-
-static int has_priority(t_coder *coder, t_coder *opponent, t_config *config, t_dongle *dongle)
-{
-	if (opponent == NULL && config->scheduler == FIFO)
-	{
-		dongle->requester = coder;
-		return (1);
-	}
-	if (opponent != NULL && config->scheduler == EDF)
-	{
-		if (get_remain_before_burnout(config, coder) <= get_remain_before_burnout(config, opponent))
+		if (get_remain_before_burnout(config, coder) <=
+		    get_remain_before_burnout(config, dongle->requester))
 			return (1);
 		dongle->requester = coder;
 	}
-	if (opponent == NULL && config->scheduler == EDF)
+	if (config->scheduler == EDF && dongle->requester == NULL)
 		dongle->requester = coder;
 	return (0);
 }
@@ -54,20 +25,24 @@ static int has_priority(t_coder *coder, t_coder *opponent, t_config *config, t_d
 static int request_dongle(t_coder *coder, t_dongle *dongle, t_config *config)
 {
 	struct timespec abs_burnout_t;
-	abs_burnout_t = abs_time_burnout(config, coder);
 
+	abs_burnout_t = abs_time_burnout(config, coder);
+	if (!dongle)
+		return (1);
 	pthread_mutex_lock(&dongle->lock);
-	while (!has_priority(coder, dongle->requester, config, dongle))
+	while (!has_priority(coder, config, dongle))
 	{
 		pthread_cond_broadcast(&dongle->cond);
-		if (pthread_cond_timedwait(&dongle->cond, &dongle->lock, &abs_burnout_t) == ETIMEDOUT || one_coder_burned_out(coder))
+		if (pthread_cond_timedwait(&dongle->cond, &dongle->lock, &abs_burnout_t) == ETIMEDOUT)
 		{
+			pthread_cond_broadcast(&dongle->cond);
 			pthread_mutex_unlock(&dongle->lock);
 			return (0);
 		}
 	}
-	if (one_coder_burned_out(coder))
+	if (one_coder_burned_out(coder, config))
 	{
+		pthread_cond_broadcast(&dongle->cond);
 		pthread_mutex_unlock(&dongle->lock);
 		return (0);
 	}
@@ -77,9 +52,38 @@ static int request_dongle(t_coder *coder, t_dongle *dongle, t_config *config)
 
 static void release_dongle(t_dongle *dongle)
 {
+	if (!dongle)
+		return;
 	dongle->requester = NULL;
 	pthread_cond_broadcast(&dongle->cond);
 	pthread_mutex_unlock(&dongle->lock);
+}
+
+static void *work_loop(t_coder *coder, t_config *config)
+{
+	while (increase_compiled_if_remain(config))
+	{
+		if (coder->id % 2)
+		{
+			if (!request_dongle(coder, coder->dongle_r, config))
+				return (NULL);
+			if (!request_dongle(coder, coder->dongle_l, config))
+				return (release_dongle(coder->dongle_r), NULL);
+		}
+		if (!(coder->id % 2))
+		{
+			if (!request_dongle(coder, coder->dongle_l, config))
+				return (NULL);
+			if (!request_dongle(coder, coder->dongle_r, config))
+				return (release_dongle(coder->dongle_l), NULL);
+		}
+		compiling(coder, config);
+		release_dongle(coder->dongle_r);
+		release_dongle(coder->dongle_l);
+		debugging(coder, config);
+		refactoring(coder, config);
+	}
+	return (coder);
 }
 
 void *thread_work(void *arg)
@@ -91,51 +95,16 @@ void *thread_work(void *arg)
 	config = coder->config;
 	if (!config || !coder)
 		return (NULL);
+	pthread_mutex_lock(&config->lock);
 	while (config->start == 0)
 	{
 		gettimeofday(&coder->last_compile, NULL);
+		pthread_cond_wait(&config->cond, &config->lock);
 	}
+	pthread_mutex_unlock(&config->lock);
+	fprintf(stderr, "Thread %d start\n", coder->id);
+	pthread_mutex_lock(&coder->lock);
 	gettimeofday(&coder->last_compile, NULL);
-	while (increase_compiled_if_remain(config))
-	{
-		if (coder->id % 2)
-		{
-			if (!request_dongle(coder, coder->dongle_r, config) || one_coder_burned_out(coder))
-				break;
-			if (config->number_of_coders > 1)
-			{
-				if (!request_dongle(coder, coder->dongle_l, config) || one_coder_burned_out(coder))
-				{
-					release_dongle(coder->dongle_r);
-					break;
-				}
-			}
-		}
-		else
-		{
-			if (config->number_of_coders > 1)
-				if (!request_dongle(coder, coder->dongle_l, config) || one_coder_burned_out(coder))
-					break;
-			if (!request_dongle(coder, coder->dongle_r, config) || one_coder_burned_out(coder))
-			{
-				if (config->number_of_coders > 1)
-					release_dongle(coder->dongle_l);
-				break;
-			}
-		}
-		if (one_coder_burned_out(coder))
-		{
-			release_dongle(coder->dongle_r);
-			if (config->number_of_coders > 1)
-				release_dongle(coder->dongle_l);
-			return (NULL);
-		}
-		compiling(coder, config);
-		release_dongle(coder->dongle_r);
-		if (config->number_of_coders > 1)
-			release_dongle(coder->dongle_l);
-		debugging(coder, config);
-		refactoring(coder, config);
-	}
-	return (arg);
+	pthread_mutex_unlock(&coder->lock);
+	return (work_loop(coder, config));
 }

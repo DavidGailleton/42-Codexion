@@ -26,16 +26,18 @@ long long get_remain_before_burnout(t_config *config, t_coder *coder)
 
 	gettimeofday(&time, NULL);
 	now_ms = (long long) time.tv_sec * 1000LL + (long long) time.tv_usec / 1000LL;
+	pthread_mutex_lock(&coder->lock);
 	last_compile_ms = (long long) coder->last_compile.tv_sec * 1000LL +
 	                  (long long) coder->last_compile.tv_usec / 1000LL;
 	elapsed_ms = now_ms - last_compile_ms;
+	pthread_mutex_unlock(&coder->lock);
 	return (config->time_to_burnout - elapsed_ms);
 }
 
 int increase_compiled_if_remain(t_config *config)
 {
 	pthread_mutex_lock(&config->lock);
-	if (!(config->compiled < config->number_of_compiles_required))
+	if (config->compiled >= config->number_of_compiles_required)
 	{
 		pthread_mutex_unlock(&config->lock);
 		return (0);
@@ -45,32 +47,34 @@ int increase_compiled_if_remain(t_config *config)
 	return (1);
 }
 
-int is_burnout(t_coder *coder, t_config *config)
-{
-	struct timespec abs_burnout_t;
-	abs_burnout_t = abs_time_burnout(config, coder);
-
-	while (pthread_mutex_lock(&coder->lock))
-		if (pthread_cond_timedwait(&coder->cond, &coder->lock, &abs_burnout_t) == ETIMEDOUT)
-			return (0);
-	if (get_remain_before_burnout(config, coder) < 0)
-	{
-		pthread_mutex_unlock(&coder->lock);
-		pthread_cond_broadcast(&coder->cond);
-		return (1);
-	}
-	pthread_mutex_unlock(&coder->lock);
-	pthread_cond_broadcast(&coder->cond);
-	return (0);
-}
-
 struct timespec abs_time_burnout(t_config *config, t_coder *coder)
 {
 	struct timespec res;
 	long long       usec_time;
 
+	pthread_mutex_lock(&coder->lock);
 	usec_time = coder->last_compile.tv_usec + config->time_to_burnout * 1000LL;
 	res.tv_sec = coder->last_compile.tv_sec + usec_time / 1000000LL;
+	pthread_mutex_unlock(&coder->lock);
 	res.tv_nsec = (usec_time % 1000000LL) * 1000LL;
 	return res;
+}
+
+int one_coder_burned_out(t_coder *coders, t_config *config)
+{
+	int i;
+
+	i = 0;
+	while (i++ < config->number_of_coders)
+	{
+		pthread_mutex_lock(&coders->lock);
+		if (coders->burned_out)
+		{
+			pthread_mutex_unlock(&coders->lock);
+			return (1);
+		}
+		pthread_mutex_unlock(&coders->lock);
+		coders = coders->next;
+	}
+	return (0);
 }

@@ -58,8 +58,8 @@ int       destroy(t_coder *coders, t_config *config);
 long long       get_process_time(t_config *config);
 long long       get_remain_before_burnout(t_config *config, t_coder *coder);
 int             increase_compiled_if_remain(t_config *config);
-int             is_burnout(t_coder *coder, t_config *config);
 struct timespec abs_time_burnout(t_config *config, t_coder *coder);
+int             one_coder_burned_out(t_coder *coders, t_config *config);
 
 void *burnout_checker(void *arg);
 

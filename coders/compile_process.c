@@ -1,11 +1,14 @@
 #include "codexion.h"
+#include <pthread.h>
 #include <stdio.h>
 #include <sys/time.h>
 #include <unistd.h>
 
 void compiling(t_coder *coder, t_config *config)
 {
+	pthread_mutex_lock(&coder->lock);
 	gettimeofday(&coder->last_compile, NULL);
+	pthread_mutex_unlock(&coder->lock);
 	printf("%lld %d is compiling\n", get_process_time(config), coder->id);
 	usleep(config->time_to_compile * 1000);
 }

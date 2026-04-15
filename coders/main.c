@@ -8,21 +8,25 @@ int start_coders(t_coder *coders, t_config *config)
 {
 	int i;
 
-	i = -1;
-	while (++i < config->number_of_coders)
+	i = 0;
+	while (i++ < config->number_of_coders)
 	{
 		pthread_create(&coders->thread, NULL, thread_work, coders);
 		coders = coders->next;
 	}
+	pthread_mutex_lock(&config->lock);
 	gettimeofday(&config->programm_start_time, NULL);
 	config->start = 1;
+	pthread_cond_broadcast(&config->cond);
+	pthread_mutex_unlock(&config->lock);
 	pthread_create(&config->monitor, NULL, burnout_checker, coders);
-	i = -1;
-	while (++i < config->number_of_coders)
+	i = 0;
+	while (i++ < config->number_of_coders)
 	{
 		pthread_join(coders->thread, NULL);
 		coders = coders->next;
 	}
+	pthread_join(config->monitor, NULL);
 	return (1);
 }
 
