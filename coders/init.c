@@ -38,9 +38,12 @@ static t_coder *create_coder(int id, t_coder *prev_coder, t_config *config)
 	}
 	else
 		coder->dongle_l = NULL;
+	pthread_mutex_init(&coder->lock, NULL);
+	pthread_cond_init(&coder->cond, NULL);
 	coder->pre = prev_coder;
 	coder->next = NULL;
 	coder->config = config;
+	coder->burned_out = 0;
 	return (coder);
 }
 

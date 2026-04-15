@@ -23,6 +23,8 @@ void free_coders(t_coder *coders)
 		temp = coders->next;
 		if (coders->dongle_r)
 			free_dongle(coders->dongle_r);
+		pthread_mutex_destroy(&coders->lock);
+		pthread_cond_destroy(&coders->cond);
 		free(coders);
 		coders = temp;
 	}

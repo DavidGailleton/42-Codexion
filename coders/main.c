@@ -16,6 +16,7 @@ int start_coders(t_coder *coders, t_config *config)
 	}
 	gettimeofday(&config->programm_start_time, NULL);
 	config->start = 1;
+	pthread_create(&config->monitor, NULL, burnout_checker, coders);
 	i = -1;
 	while (++i < config->number_of_coders)
 	{
