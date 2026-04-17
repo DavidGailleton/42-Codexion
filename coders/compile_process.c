@@ -9,18 +9,27 @@ void compiling(t_coder *coder, t_config *config)
 	pthread_mutex_lock(&coder->lock);
 	gettimeofday(&coder->last_compile, NULL);
 	pthread_mutex_unlock(&coder->lock);
-	printf("%lld %d is compiling\n", get_process_time(config), coder->id);
+	pthread_mutex_lock(&config->printf_lock);
+	if (!one_coder_burned_out(coder, config))
+		printf("%lld %d is compiling\n", get_process_time(config), coder->id);
+	pthread_mutex_unlock(&config->printf_lock);
 	usleep(config->time_to_compile * 1000);
 }
 
 void refactoring(t_coder *coder, t_config *config)
 {
-	printf("%lld %d is refactoring\n", get_process_time(config), coder->id);
+	pthread_mutex_lock(&config->printf_lock);
+	if (!one_coder_burned_out(coder, config))
+		printf("%lld %d is refactoring\n", get_process_time(config), coder->id);
+	pthread_mutex_unlock(&config->printf_lock);
 	usleep(config->time_to_refactor * 1000);
 }
 
 void debugging(t_coder *coder, t_config *config)
 {
-	printf("%lld %d is debugging\n", get_process_time(config), coder->id);
+	pthread_mutex_lock(&config->printf_lock);
+	if (!one_coder_burned_out(coder, config))
+		printf("%lld %d is debugging\n", get_process_time(config), coder->id);
+	pthread_mutex_unlock(&config->printf_lock);
 	usleep(config->time_to_debug * 1000);
 }

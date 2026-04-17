@@ -37,11 +37,7 @@ int main(int ac, char **av)
 
 	config = parsing(ac, av);
 	if (!config)
-	{
-		fprintf(stderr, "%s\n", "An error occurred during parsing");
 		return (1);
-	}
-	fprintf(stderr, "%p\n", config);
 	coders = init_coders(config);
 	if (!coders)
 	{

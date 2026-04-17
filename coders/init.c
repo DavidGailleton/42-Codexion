@@ -11,6 +11,8 @@ static t_dongle *create_dongle(int id)
 		return (NULL);
 	dongle->id = id;
 	dongle->requester = NULL;
+	dongle->last_release.tv_sec = 0;
+	dongle->last_release.tv_usec = 0;
 	pthread_cond_init(&dongle->cond, NULL);
 	pthread_mutex_init(&dongle->lock, NULL);
 	return (dongle);

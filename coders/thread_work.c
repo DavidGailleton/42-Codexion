@@ -39,6 +39,9 @@ static int request_dongle(t_coder *coder, t_dongle *dongle, t_config *config)
 	if (!dongle)
 		return (1);
 	pthread_mutex_lock(&dongle->lock);
+	usleep((config->dongle_cooldown * 1000LL) -
+	       (get_process_time(config) -
+	        (dongle->last_release.tv_sec * 1000LL + dongle->last_release.tv_usec / 1000LL)));
 	while (!has_priority(coder, config, dongle))
 	{
 		pthread_cond_broadcast(&dongle->cond);
@@ -55,7 +58,10 @@ static int request_dongle(t_coder *coder, t_dongle *dongle, t_config *config)
 		pthread_mutex_unlock(&dongle->lock);
 		return (0);
 	}
-	printf("%lld %d has taken a dongle\n", get_process_time(config), coder->id);
+	pthread_mutex_lock(&config->printf_lock);
+	if (!one_coder_burned_out(coder, config))
+		printf("%lld %d has taken a dongle\n", get_process_time(config), coder->id);
+	pthread_mutex_unlock(&config->printf_lock);
 	return (1);
 }
 
@@ -104,15 +110,12 @@ void *thread_work(void *arg)
 	config = coder->config;
 	if (!config || !coder)
 		return (NULL);
-	pthread_mutex_lock(&coder->lock);
 	pthread_mutex_lock(&config->lock);
 	while (config->start == 0)
-	{
-		gettimeofday(&coder->last_compile, NULL);
 		pthread_cond_wait(&config->cond, &config->lock);
-	}
+	pthread_cond_broadcast(&config->cond);
 	pthread_mutex_unlock(&config->lock);
-	fprintf(stderr, "Thread %d start\n", coder->id);
+	pthread_mutex_lock(&coder->lock);
 	gettimeofday(&coder->last_compile, NULL);
 	pthread_mutex_unlock(&coder->lock);
 	return (work_loop(coder, config));

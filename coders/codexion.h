@@ -4,8 +4,35 @@
 #include <sys/time.h>
 #include <sys/types.h>
 
+#ifdef FIFO
+#undef FIFO
+#endif // !FIFO
 #define FIFO 0
+
+#ifdef EDF
+#undef EDF
+#endif // !EDF
 #define EDF 1
+
+#ifdef INVALID_INT
+#undef INVALID_INT
+#endif // !INVALID_INT
+#define INVALID_INT 1
+
+#ifdef INVALID_SCHEDULER
+#undef INVALID_SCHEDULER
+#endif // !INVALID_SCHEDULER
+#define INVALID_SCHEDULER 2
+
+#ifdef MUTEX_CRASH
+#undef MUTEX_CRASH
+#endif // !MUTEX_CRASH
+#define MUTEX_CRASH 3
+
+#ifdef COND_CRASH
+#undef COND_CRASH
+#endif // !COND_CRASH
+#define COND_CRASH 4
 
 typedef struct s_config
 {
@@ -23,6 +50,7 @@ typedef struct s_config
 	pthread_cond_t  cond;
 	struct timeval  programm_start_time;
 	pthread_t       monitor;
+	pthread_mutex_t printf_lock;
 } t_config;
 
 typedef struct s_dongle
@@ -31,6 +59,7 @@ typedef struct s_dongle
 	pthread_mutex_t lock;
 	void           *requester;
 	pthread_cond_t  cond;
+	struct timeval  last_release;
 } t_dongle;
 
 typedef struct s_coder
