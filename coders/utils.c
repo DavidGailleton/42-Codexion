@@ -19,18 +19,18 @@ long long get_process_time(t_config *config)
 
 long long get_remain_before_burnout(t_config *config, t_coder *coder)
 {
-	struct timeval time;
-	long long      now_ms;
-	long long      last_compile_ms;
-	long long      elapsed_ms;
+	struct timeval     time;
+	long long          now_ms;
+	unsigned long long last_compile_ms;
+	long long          elapsed_ms;
 
 	gettimeofday(&time, NULL);
 	now_ms = (long long) time.tv_sec * 1000LL + (long long) time.tv_usec / 1000LL;
 	pthread_mutex_lock(&coder->lock);
-	last_compile_ms = (long long) coder->last_compile.tv_sec * 1000LL +
-	                  (long long) coder->last_compile.tv_usec / 1000LL;
-	elapsed_ms = now_ms - last_compile_ms;
+	last_compile_ms = (unsigned long long) coder->last_compile.tv_sec * 1000LL +
+	                  (unsigned long long) coder->last_compile.tv_usec / 1000LL;
 	pthread_mutex_unlock(&coder->lock);
+	elapsed_ms = now_ms - last_compile_ms;
 	return (config->time_to_burnout - elapsed_ms);
 }
 
@@ -52,7 +52,7 @@ int one_coder_burned_out(t_coder *coders, t_config *config)
 	int i;
 
 	i = 0;
-	while (i++ < config->number_of_coders)
+	while (++i < config->number_of_coders)
 	{
 		pthread_mutex_lock(&coders->lock);
 		if (coders->burned_out)

@@ -58,9 +58,16 @@ static t_config *get_config(char **av)
 	if (pthread_cond_init(&config->cond, NULL))
 		fprintf(stderr, "%s\n", "Error during config cond init");
 	else if (pthread_mutex_init(&config->lock, NULL))
+	{
+		pthread_cond_destroy(&config->cond);
 		fprintf(stderr, "%s\n", "Error during config mutex init");
+	}
 	else if (pthread_mutex_init(&config->printf_lock, NULL))
+	{
+		pthread_cond_destroy(&config->cond);
+		pthread_mutex_destroy(&config->lock);
 		fprintf(stderr, "%s\n", "Error during printf mutex init");
+	}
 	else
 		return (config);
 	return (free(config), NULL);

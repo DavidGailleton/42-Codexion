@@ -52,13 +52,16 @@ typedef struct s_config
 	pthread_mutex_t printf_lock;
 } t_config;
 
+typedef struct s_coder t_coder;
+
 typedef struct s_dongle
 {
 	int             id;
 	pthread_mutex_t lock;
-	void           *requester;
 	pthread_cond_t  cond;
 	struct timeval  last_release;
+	t_coder        *coder_l;
+	t_coder        *coder_r;
 } t_dongle;
 
 typedef struct s_coder

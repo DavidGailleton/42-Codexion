@@ -3,7 +3,7 @@ CC				= cc
 MAKE			+= --no-print-directory
 CCFLAGS		= -Wall -Wextra -Werror -pthread -MMD -MP
 CCFLAGS		+= -Icoders
-DEBUG_CCFLAGS = -g3 -DDEBUG=1 -fsanitize=thread
+DEBUG_CCFLAGS = -g3 -O0 -pthread
 LDFLAGS		= -Llibft -lunit -lft -L.
 
 SRC				= coders/main.c \
@@ -23,7 +23,7 @@ $(NAME): $(OBJ)
 	$(CC) $(CCFLAGS) $(OBJ) -o $(NAME) 
 
 debug:
-	$(CC) $(CCFLAGS) $(DEBUG_CCFLAGS) $(SRC) -o $(NAME) 
+	$(CC) $(DEBUG_CCFLAGS) $(SRC) -o $(NAME) 
 
 %.o: %.c Makefile
 	$(CC) $(CCFLAGS) -c $< -o $@

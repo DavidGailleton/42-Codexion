@@ -25,11 +25,9 @@ void *burnout_checker(void *arg)
 
 	coders = (t_coder *) arg;
 	config = coders->config;
-	pthread_mutex_lock(&config->lock);
 	while (remain_compile_on_every_coders(config, coders))
 	{
-		pthread_mutex_unlock(&config->lock);
-		if (get_remain_before_burnout(config, coders) < 0 && remain_compile(config, coders) > 0)
+		if (get_remain_before_burnout(config, coders) <= 0 && remain_compile(config, coders) > 0)
 		{
 			pthread_mutex_lock(&config->printf_lock);
 			printf("%lld %d burned out\n", get_process_time(config), coders->id);
@@ -40,8 +38,6 @@ void *burnout_checker(void *arg)
 			return (NULL);
 		}
 		coders = coders->next;
-		pthread_mutex_lock(&config->lock);
 	}
-	pthread_mutex_unlock(&config->lock);
 	return (arg);
 }
