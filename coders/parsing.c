@@ -38,7 +38,6 @@ static void basic_config_init(char **av, t_config *config)
 	config->time_to_refactor = atoi(av[5]);
 	config->number_of_compiles_required = atoi(av[6]);
 	config->dongle_cooldown = atoi(av[7]);
-	config->compiled = 0;
 	config->start = 0;
 }
 

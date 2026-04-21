@@ -34,19 +34,6 @@ long long get_remain_before_burnout(t_config *config, t_coder *coder)
 	return (config->time_to_burnout - elapsed_ms);
 }
 
-int increase_compiled_if_remain(t_config *config)
-{
-	pthread_mutex_lock(&config->lock);
-	if (config->compiled >= config->number_of_compiles_required)
-	{
-		pthread_mutex_unlock(&config->lock);
-		return (0);
-	}
-	config->compiled++;
-	pthread_mutex_unlock(&config->lock);
-	return (1);
-}
-
 struct timespec abs_time_burnout(t_config *config, t_coder *coder)
 {
 	struct timespec res;
@@ -77,4 +64,13 @@ int one_coder_burned_out(t_coder *coders, t_config *config)
 		coders = coders->next;
 	}
 	return (0);
+}
+
+int remain_compile(t_config *config, t_coder *coder)
+{
+	int coder_compile;
+	pthread_mutex_lock(&coder->lock);
+	coder_compile = coder->total_compile;
+	pthread_mutex_unlock(&coder->lock);
+	return (config->number_of_compiles_required - coder_compile);
 }

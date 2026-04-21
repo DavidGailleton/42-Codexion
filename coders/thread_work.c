@@ -26,7 +26,8 @@ static int has_priority(t_coder *coder, t_config *config, t_dongle *dongle)
 	req_remain = get_remain_before_burnout(config, dongle->requester);
 	if (coder_remain < req_remain)
 		return (1);
-	if (coder_remain == req_remain && coder->id % 2)
+	if (coder_remain == req_remain &&
+	    remain_compile(config, coder) < remain_compile(config, dongle->requester))
 		return (1);
 	return (0);
 }
@@ -76,7 +77,7 @@ static void release_dongle(t_dongle *dongle, t_coder *coder)
 
 static void *work_loop(t_coder *coder, t_config *config)
 {
-	while (increase_compiled_if_remain(config))
+	while (coder->total_compile < config->number_of_compiles_required)
 	{
 		if (coder->id % 2)
 		{
@@ -108,6 +109,7 @@ void *thread_work(void *arg)
 
 	coder = (t_coder *) arg;
 	config = coder->config;
+	gettimeofday(&coder->last_compile, NULL);
 	if (!config || !coder)
 		return (NULL);
 	pthread_mutex_lock(&config->lock);

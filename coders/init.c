@@ -26,6 +26,7 @@ static t_coder *create_coder(int id, t_coder *prev_coder, t_config *config)
 	if (!coder)
 		return (NULL);
 	coder->id = id;
+	coder->total_compile = 0;
 	coder->dongle_r = NULL;
 	coder->dongle_r = create_dongle(id);
 	if (!coder->dongle_r)

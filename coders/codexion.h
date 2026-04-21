@@ -39,7 +39,6 @@ typedef struct s_config
 	int             scheduler;
 	int             number_of_coders;
 	int             number_of_compiles_required;
-	int             compiled;
 	int             start;
 	suseconds_t     dongle_cooldown;
 	suseconds_t     time_to_burnout;
@@ -65,6 +64,7 @@ typedef struct s_dongle
 typedef struct s_coder
 {
 	int             id;
+	int             total_compile;
 	suseconds_t     created_at;
 	struct timeval  last_compile;
 	t_dongle       *dongle_r;
@@ -86,9 +86,9 @@ int       destroy(t_coder *coders, t_config *config);
 
 long long       get_process_time(t_config *config);
 long long       get_remain_before_burnout(t_config *config, t_coder *coder);
-int             increase_compiled_if_remain(t_config *config);
 struct timespec abs_time_burnout(t_config *config, t_coder *coder);
 int             one_coder_burned_out(t_coder *coders, t_config *config);
+int             remain_compile(t_config *config, t_coder *coder);
 
 void *burnout_checker(void *arg);
 

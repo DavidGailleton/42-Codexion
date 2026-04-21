@@ -8,6 +8,7 @@ void compiling(t_coder *coder, t_config *config)
 {
 	pthread_mutex_lock(&coder->lock);
 	gettimeofday(&coder->last_compile, NULL);
+	coder->total_compile++;
 	pthread_mutex_unlock(&coder->lock);
 	pthread_mutex_lock(&config->printf_lock);
 	if (!one_coder_burned_out(coder, config))
