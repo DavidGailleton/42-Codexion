@@ -41,11 +41,11 @@ typedef struct s_config
 	int             number_of_compiles_required;
 	int             start;
 	int             burnout;
-	suseconds_t     dongle_cooldown;
-	suseconds_t     time_to_burnout;
-	suseconds_t     time_to_compile;
-	suseconds_t     time_to_debug;
-	suseconds_t     time_to_refactor;
+	__useconds_t    dongle_cooldown;
+	__useconds_t    time_to_burnout;
+	__useconds_t    time_to_compile;
+	__useconds_t    time_to_debug;
+	__useconds_t    time_to_refactor;
 	pthread_mutex_t lock;
 	pthread_cond_t  cond;
 	struct timeval  programm_start_time;
@@ -69,7 +69,7 @@ typedef struct s_coder
 {
 	int             id;
 	int             total_compile;
-	suseconds_t     created_at;
+	__useconds_t    created_at;
 	struct timeval  last_compile;
 	t_dongle       *dongle_r;
 	t_dongle       *dongle_l;
@@ -91,7 +91,6 @@ int       destroy(t_coder *coders, t_config *config);
 long long       get_process_time(t_config *config);
 long long       get_remain_before_burnout(t_config *config, t_coder *coder);
 struct timespec abs_time_burnout(t_config *config, t_coder *coder);
-int             one_coder_burned_out(t_coder *coders, t_config *config);
 int             remain_compile(t_config *config, t_coder *coder);
 
 void *burnout_checker(void *arg);

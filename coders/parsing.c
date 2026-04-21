@@ -25,6 +25,8 @@ static int check_inputs(int ac, char **av)
 				return (INVALID_INT);
 		if (strlen(av[i]) == 10 && strcmp(av[i], "2147483647") > 0)
 			return (INVALID_INT);
+		if (atoi(av[i]) < 0)
+			return (INVALID_INT);
 	}
 	return (-1);
 }

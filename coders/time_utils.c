@@ -1,4 +1,5 @@
 #include "codexion.h"
+#include <limits.h>
 #include <pthread.h>
 #include <unistd.h>
 
@@ -17,18 +18,21 @@ long long get_process_time(t_config *config)
 
 long long get_remain_before_burnout(t_config *config, t_coder *coder)
 {
-	struct timeval     time;
-	long long          now_ms;
-	unsigned long long last_compile_ms;
-	long long          elapsed_ms;
+	struct timeval time;
+	long long      now_ms;
+	long long      last_compile_ms;
+	long long      elapsed_ms;
 
 	gettimeofday(&time, NULL);
 	now_ms = (long long) time.tv_sec * 1000LL + (long long) time.tv_usec / 1000LL;
 	pthread_mutex_lock(&coder->lock);
 	if (!coder->last_compile.tv_sec)
+	{
+		pthread_mutex_unlock(&coder->lock);
 		return (1);
-	last_compile_ms = (unsigned long long) coder->last_compile.tv_sec * 1000LL +
-	                  (unsigned long long) coder->last_compile.tv_usec / 1000LL;
+	}
+	last_compile_ms = (long long) coder->last_compile.tv_sec * 1000LL +
+	                  (long long) coder->last_compile.tv_usec / 1000LL;
 	pthread_mutex_unlock(&coder->lock);
 	elapsed_ms = now_ms - last_compile_ms;
 	return (config->time_to_burnout - elapsed_ms);
@@ -59,6 +63,6 @@ void wait_dongle_cooldown(t_config *config, t_dongle *dongle)
 	last_release_ms =
 	    dongle->last_release.tv_sec * 1000LL + dongle->last_release.tv_usec / 1000LL;
 	remain_ms = config->dongle_cooldown - (now_ms - last_release_ms);
-	if (remain_ms > 0)
-		usleep(remain_ms * 1000);
+	if (remain_ms > 0 && remain_ms < UINT_MAX)
+		usleep((unsigned int) remain_ms * 1000);
 }

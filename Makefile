@@ -3,8 +3,14 @@ CC				= cc
 MAKE			+= --no-print-directory
 CCFLAGS		= -Wall -Wextra -Werror -pthread -MMD -MP
 CCFLAGS		+= -Icoders
-DEBUG_CCFLAGS = -g3 -O0 -pthread
-LDFLAGS		= -Llibft -lunit -lft -L.
+DEBUG_CCFLAGS = gcc -Wall -Wextra -Werror -Wpedantic \
+    -Wshadow -Wconversion -Wsign-conversion \
+    -Wcast-qual -Wwrite-strings -Wundef \
+    -Wstrict-prototypes -Wmissing-prototypes \
+    -Wformat=2 -Wnull-dereference -Wdouble-promotion \
+    -Wimplicit-fallthrough -Weverything -g \
+ADDRSAN_FLAGS = -Wall -Wextra -Werror -g \
+    -fsanitize=address,undefined -fno-omit-frame-pointer \
 
 SRC				= coders/main.c \
 						coders/init.c \
@@ -25,7 +31,10 @@ $(NAME): $(OBJ)
 	$(CC) $(CCFLAGS) $(OBJ) -o $(NAME) 
 
 debug:
-	$(CC) $(DEBUG_CCFLAGS) $(SRC) -o $(NAME) 
+	$(CC) $(DEBUG_CCFLAGS) $(SRC) -pthread -o $(NAME) 
+
+addrsan:
+	$(CC) $(ADDRSAN_FLAGS) $(SRC) -pthread -o $(NAME) 
 
 %.o: %.c Makefile
 	$(CC) $(CCFLAGS) -c $< -o $@

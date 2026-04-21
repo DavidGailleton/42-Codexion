@@ -20,6 +20,8 @@ static int has_priority(t_coder *coder, t_config *config, t_dongle *dongle)
 		other_coder = dongle->coder_l;
 	else
 		other_coder = dongle->coder_r;
+	if (!other_coder)
+		return (1);
 	coder_remain = get_remain_before_burnout(config, coder);
 	req_remain = get_remain_before_burnout(config, other_coder);
 	if (coder_remain < req_remain || remain_compile(config, other_coder) <= 0)
@@ -53,7 +55,10 @@ static int request_dongle(t_coder *coder, t_dongle *dongle, t_config *config)
 		printf("%lld %d has taken a dongle\n", get_process_time(config), coder->id);
 	pthread_mutex_unlock(&config->printf_lock);
 	if (get_burnout(config))
+	{
+		pthread_mutex_unlock(&dongle->lock);
 		return (0);
+	}
 	return (1);
 }
 
@@ -89,6 +94,8 @@ static void *work_loop(t_coder *coder, t_config *config)
 		release_dongle(coder->dongle_l);
 		debugging(coder, config);
 		refactoring(coder, config);
+		if (get_burnout(config))
+			return (NULL);
 	}
 	return (coder);
 }
@@ -99,7 +106,11 @@ void *thread_work(void *arg)
 	t_config *config = NULL;
 
 	coder = (t_coder *) arg;
+	if (!coder)
+		return (NULL);
 	config = coder->config;
+	if (!config)
+		return (NULL);
 	gettimeofday(&coder->last_compile, NULL);
 	if (!config || !coder)
 		return (NULL);

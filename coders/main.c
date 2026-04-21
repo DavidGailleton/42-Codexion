@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <sys/time.h>
 
-int start_coders(t_coder *coders, t_config *config)
+static int start_coders(t_coder *coders, t_config *config)
 {
 	int i;
 
