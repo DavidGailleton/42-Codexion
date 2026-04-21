@@ -13,7 +13,9 @@ SRC				= coders/main.c \
 						coders/destroy.c \
 						coders/thread_work.c \
 						coders/utils.c \
-						coders/burnout_checker.c
+						coders/burnout_checker.c \
+						coders/config_utils.c \
+						coders/time_utils.c
 OBJ				= $(SRC:.c=.o)
 
 

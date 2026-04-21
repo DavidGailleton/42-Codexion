@@ -22,7 +22,7 @@ static int has_priority(t_coder *coder, t_config *config, t_dongle *dongle)
 		other_coder = dongle->coder_r;
 	coder_remain = get_remain_before_burnout(config, coder);
 	req_remain = get_remain_before_burnout(config, other_coder);
-	if (coder_remain < req_remain)
+	if (coder_remain < req_remain || remain_compile(config, other_coder) <= 0)
 		return (1);
 	if (coder_remain == req_remain && remain_compile(config, coder) >= remain_compile(config, other_coder))
 		return (1);
@@ -32,17 +32,12 @@ static int has_priority(t_coder *coder, t_config *config, t_dongle *dongle)
 static int request_dongle(t_coder *coder, t_dongle *dongle, t_config *config)
 {
 	struct timespec abs_burnout_t;
-	long long       remain_cooldown;
 
 	abs_burnout_t = abs_time_burnout(config, coder);
 	if (!dongle)
 		return (1);
 	pthread_mutex_lock(&dongle->lock);
-	remain_cooldown = (config->dongle_cooldown * 1000LL) -
-	                  (get_process_time(config) - (dongle->last_release.tv_sec * 1000LL +
-	                                               dongle->last_release.tv_usec / 1000LL));
-	if (remain_cooldown > 0)
-		usleep(remain_cooldown);
+	wait_dongle_cooldown(config, dongle);
 	while (!has_priority(coder, config, dongle))
 	{
 		pthread_cond_broadcast(&dongle->cond);
@@ -53,15 +48,12 @@ static int request_dongle(t_coder *coder, t_dongle *dongle, t_config *config)
 			return (0);
 		}
 	}
-	if (one_coder_burned_out(coder, config))
-	{
-		pthread_cond_broadcast(&dongle->cond);
-		pthread_mutex_unlock(&dongle->lock);
-		return (0);
-	}
 	pthread_mutex_lock(&config->printf_lock);
-	printf("%lld %d has taken a dongle\n", get_process_time(config), coder->id);
+	if (!get_burnout(config))
+		printf("%lld %d has taken a dongle\n", get_process_time(config), coder->id);
 	pthread_mutex_unlock(&config->printf_lock);
+	if (get_burnout(config))
+		return (0);
 	return (1);
 }
 
@@ -69,13 +61,14 @@ static void release_dongle(t_dongle *dongle)
 {
 	if (!dongle)
 		return;
+	gettimeofday(&dongle->last_release, NULL);
 	pthread_cond_broadcast(&dongle->cond);
 	pthread_mutex_unlock(&dongle->lock);
 }
 
 static void *work_loop(t_coder *coder, t_config *config)
 {
-	while (coder->total_compile < config->number_of_compiles_required)
+	while (coder->total_compile < config->number_of_compiles_required && !get_burnout(config))
 	{
 		if (coder->id % 2)
 		{

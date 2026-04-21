@@ -12,11 +12,10 @@ static t_dongle *create_dongle(int id)
 	dongle->id = id;
 	dongle->last_release.tv_sec = 0;
 	dongle->last_release.tv_usec = 0;
+	pthread_mutex_init(&dongle->lock, NULL);
 	if (pthread_cond_init(&dongle->cond, NULL))
-		free(dongle);
-	else if (pthread_mutex_init(&dongle->lock, NULL))
 	{
-		pthread_cond_destroy(&dongle->cond);
+		pthread_mutex_destroy(&dongle->lock);
 		free(dongle);
 	}
 	else
@@ -35,6 +34,7 @@ static t_coder *create_coder(int id, t_coder *prev_coder, t_config *config)
 	coder->total_compile = 0;
 	coder->dongle_r = NULL;
 	coder->dongle_r = create_dongle(id);
+	coder->last_compile.tv_sec = 0;
 	if (!coder->dongle_r)
 	{
 		free(coder);
@@ -51,9 +51,8 @@ static t_coder *create_coder(int id, t_coder *prev_coder, t_config *config)
 	coder->next = NULL;
 	coder->config = config;
 	coder->burned_out = 0;
-	if (pthread_mutex_init(&coder->lock, NULL))
-		free(coder);
-	else if (pthread_cond_init(&coder->cond, NULL))
+	pthread_mutex_init(&coder->lock, NULL);
+	if (pthread_cond_init(&coder->cond, NULL))
 	{
 		pthread_mutex_destroy(&coder->lock);
 		free(coder);

@@ -40,6 +40,7 @@ typedef struct s_config
 	int             number_of_coders;
 	int             number_of_compiles_required;
 	int             start;
+	int             burnout;
 	suseconds_t     dongle_cooldown;
 	suseconds_t     time_to_burnout;
 	suseconds_t     time_to_compile;
@@ -98,5 +99,10 @@ void *burnout_checker(void *arg);
 void compiling(t_coder *coder, t_config *config);
 void refactoring(t_coder *coder, t_config *config);
 void debugging(t_coder *coder, t_config *config);
+
+int  get_burnout(t_config *config);
+void set_burnout(t_config *config, int value);
+
+void wait_dongle_cooldown(t_config *config, t_dongle *dongle);
 
 #endif

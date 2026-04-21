@@ -10,33 +10,27 @@ void compiling(t_coder *coder, t_config *config)
 	gettimeofday(&coder->last_compile, NULL);
 	coder->total_compile++;
 	pthread_mutex_unlock(&coder->lock);
-	if (!one_coder_burned_out(coder, config))
-	{
-		pthread_mutex_lock(&config->printf_lock);
+	pthread_mutex_lock(&config->printf_lock);
+	if (!get_burnout(config))
 		printf("%lld %d is compiling\n", get_process_time(config), coder->id);
-		pthread_mutex_unlock(&config->printf_lock);
-		usleep(config->time_to_compile * 1000);
-	}
+	pthread_mutex_unlock(&config->printf_lock);
+	usleep(config->time_to_compile * 1000);
 }
 
 void refactoring(t_coder *coder, t_config *config)
 {
-	if (!one_coder_burned_out(coder, config))
-	{
-		pthread_mutex_lock(&config->printf_lock);
+	pthread_mutex_lock(&config->printf_lock);
+	if (!get_burnout(config))
 		printf("%lld %d is refactoring\n", get_process_time(config), coder->id);
-		pthread_mutex_unlock(&config->printf_lock);
-		usleep(config->time_to_refactor * 1000);
-	}
+	pthread_mutex_unlock(&config->printf_lock);
+	usleep(config->time_to_refactor * 1000);
 }
 
 void debugging(t_coder *coder, t_config *config)
 {
-	if (!one_coder_burned_out(coder, config))
-	{
-		pthread_mutex_lock(&config->printf_lock);
+	pthread_mutex_lock(&config->printf_lock);
+	if (!get_burnout(config))
 		printf("%lld %d is debugging\n", get_process_time(config), coder->id);
-		pthread_mutex_unlock(&config->printf_lock);
-		usleep(config->time_to_debug * 1000);
-	}
+	pthread_mutex_unlock(&config->printf_lock);
+	usleep(config->time_to_debug * 1000);
 }

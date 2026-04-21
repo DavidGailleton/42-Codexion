@@ -39,6 +39,7 @@ static void basic_config_init(char **av, t_config *config)
 	config->number_of_compiles_required = atoi(av[6]);
 	config->dongle_cooldown = atoi(av[7]);
 	config->start = 0;
+	config->burnout = 0;
 }
 
 static t_config *get_config(char **av)
