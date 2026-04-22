@@ -11,6 +11,7 @@
 /* ************************************************************************** */
 
 #include "codexion.h"
+#include <bits/types/struct_timespec.h>
 #include <errno.h>
 #include <pthread.h>
 #include <stdio.h>
@@ -49,7 +50,7 @@ static int request_dongle(t_coder *coder, t_dongle *dongle, t_config *config)
 
 	abs_burnout_t = abs_time_burnout(config, coder);
 	if (!dongle)
-		return (1);
+		return (0);
 	pthread_mutex_lock(&dongle->lock);
 	wait_dongle_cooldown(config, dongle);
 	while (!has_priority(coder, config, dongle))
@@ -114,8 +115,9 @@ static void *work_loop(t_coder *coder, t_config *config)
 
 void *thread_work(void *arg)
 {
-	t_coder  *coder;
-	t_config *config;
+	t_coder       *coder;
+	t_config      *config;
+	struct timeval time;
 
 	coder = NULL;
 	config = NULL;
@@ -125,19 +127,13 @@ void *thread_work(void *arg)
 	config = coder->config;
 	if (!config)
 		return (NULL);
-	gettimeofday(&coder->last_compile, NULL);
-	if (!config || !coder)
-		return (NULL);
 	pthread_mutex_lock(&config->lock);
-	while (config->start == 0)
-		pthread_cond_wait(&config->cond, &config->lock);
-	pthread_mutex_lock(&coder->lock);
-	coder->last_compile = config->programm_start_time;
-	pthread_mutex_unlock(&coder->lock);
-	pthread_cond_broadcast(&config->cond);
+	time = config->programm_start_time;
 	pthread_mutex_unlock(&config->lock);
-
+	pthread_mutex_lock(&coder->lock);
+	coder->last_compile = time;
+	pthread_mutex_unlock(&coder->lock);
 	if (!(coder->id % 2))
-		usleep(config->time_to_compile * 100);
+		usleep(config->time_to_compile * 500 + config->dongle_cooldown * 500);
 	return (work_loop(coder, config));
 }

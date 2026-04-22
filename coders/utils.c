@@ -14,12 +14,16 @@
 #include <pthread.h>
 #include <sys/time.h>
 
-int	remain_compile(t_config *config, t_coder *coder)
+int remain_compile(t_config *config, t_coder *coder)
 {
-	int	coder_compile;
+	int coder_compile;
+	int compiles_required;
 
 	pthread_mutex_lock(&coder->lock);
 	coder_compile = coder->total_compile;
 	pthread_mutex_unlock(&coder->lock);
-	return (config->number_of_compiles_required - coder_compile);
+	pthread_mutex_lock(&config->lock);
+	compiles_required = config->number_of_compiles_required;
+	pthread_mutex_unlock(&config->lock);
+	return (compiles_required - coder_compile);
 }

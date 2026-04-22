@@ -18,21 +18,31 @@
 
 static int start_coders(t_coder *coders, t_config *config)
 {
-	int i;
+	int      i;
+	t_coder *first;
 
+	first = coders;
 	i = 0;
-	while (i++ < config->number_of_coders)
+	gettimeofday(&config->programm_start_time, NULL);
+	while (i < config->number_of_coders)
 	{
 		pthread_create(&coders->thread, NULL, thread_work, coders);
-		coders = coders->next;
+		if (i + 2 < config->number_of_coders)
+			coders = ((t_coder *) (coders->next))->next;
+		i += 2;
 	}
-	pthread_mutex_lock(&config->lock);
-	gettimeofday(&config->programm_start_time, NULL);
-	config->start = 1;
-	pthread_cond_broadcast(&config->cond);
-	pthread_mutex_unlock(&config->lock);
+	coders = first->next;
+	i = 1;
+	while (i < config->number_of_coders)
+	{
+		pthread_create(&coders->thread, NULL, thread_work, coders);
+		if (i + 2 < config->number_of_coders)
+			coders = ((t_coder *) (coders->next))->next;
+		i += 2;
+	}
 	pthread_create(&config->monitor, NULL, burnout_checker, coders);
 	i = 0;
+	coders = first;
 	while (i++ < config->number_of_coders)
 	{
 		pthread_join(coders->thread, NULL);

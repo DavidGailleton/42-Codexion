@@ -55,3 +55,6 @@ dkms.conf
 *.dwo
 
 codexion
+
+test/
+venv/
