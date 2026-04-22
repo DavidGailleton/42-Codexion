@@ -1,17 +1,29 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   destroy.c                                          :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: dgaillet <dgaillet@student.42lyon.fr>      +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2026/04/21 20:09:50 by dgaillet          #+#    #+#             */
+/*   Updated: 2026/04/21 20:09:51 by dgaillet         ###   ########lyon.fr   */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "codexion.h"
 #include <pthread.h>
 #include <stdlib.h>
 
-static void free_dongle(t_dongle *dongle)
+static void	free_dongle(t_dongle *dongle)
 {
 	pthread_mutex_destroy(&dongle->lock);
 	pthread_cond_destroy(&dongle->cond);
 	free(dongle);
 }
 
-void free_coders(t_coder *coders)
+void	free_coders(t_coder *coders)
 {
-	t_coder *temp;
+	t_coder	*temp;
 
 	if (coders->pre)
 	{
@@ -30,7 +42,7 @@ void free_coders(t_coder *coders)
 	}
 }
 
-int destroy(t_coder *coders, t_config *config)
+int	destroy(t_coder *coders, t_config *config)
 {
 	free_coders(coders);
 	pthread_mutex_destroy(&config->lock);

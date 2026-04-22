@@ -1,10 +1,22 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   init.c                                             :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: dgaillet <dgaillet@student.42lyon.fr>      +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2026/04/21 20:09:59 by dgaillet          #+#    #+#             */
+/*   Updated: 2026/04/21 20:10:02 by dgaillet         ###   ########lyon.fr   */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "codexion.h"
 #include <pthread.h>
 #include <stdlib.h>
 
-static t_dongle *create_dongle(int id)
+static t_dongle	*create_dongle(int id)
 {
-	t_dongle *dongle;
+	t_dongle	*dongle;
 
 	dongle = malloc(sizeof(t_dongle));
 	if (!dongle)
@@ -23,9 +35,9 @@ static t_dongle *create_dongle(int id)
 	return (NULL);
 }
 
-static t_coder *create_coder(int id, t_coder *prev_coder, t_config *config)
+static t_coder	*create_coder(int id, t_coder *prev_coder, t_config *config)
 {
-	t_coder *coder;
+	t_coder	*coder;
 
 	coder = malloc(sizeof(t_coder));
 	if (!coder)
@@ -62,9 +74,9 @@ static t_coder *create_coder(int id, t_coder *prev_coder, t_config *config)
 	return (NULL);
 }
 
-static void set_coder_to_dongle(t_coder *coders, t_config *config)
+static void	set_coder_to_dongle(t_coder *coders, t_config *config)
 {
-	int i;
+	int	i;
 
 	i = 0;
 	while (i++ < config->number_of_coders)
@@ -76,10 +88,10 @@ static void set_coder_to_dongle(t_coder *coders, t_config *config)
 			coders->dongle_r->coder_r = NULL;
 	}
 }
-static t_coder *create_coders(t_config *config, t_coder *first_coder)
+static t_coder	*create_coders(t_config *config, t_coder *first_coder)
 {
-	t_coder *temp;
-	int      i;
+	t_coder	*temp;
+	int		i;
 
 	i = 0;
 	temp = first_coder;
@@ -102,9 +114,9 @@ static t_coder *create_coders(t_config *config, t_coder *first_coder)
 	return (first_coder);
 }
 
-t_coder *init_coders(t_config *config)
+t_coder	*init_coders(t_config *config)
 {
-	t_coder *first_coder;
+	t_coder	*first_coder;
 
 	first_coder = NULL;
 	if (config->number_of_coders > 0)

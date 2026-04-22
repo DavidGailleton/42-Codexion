@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   thread_work.c                                      :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: dgaillet <dgaillet@student.42lyon.fr>      +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2026/04/21 20:10:24 by dgaillet          #+#    #+#             */
+/*   Updated: 2026/04/21 20:10:25 by dgaillet         ###   ########lyon.fr   */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "codexion.h"
 #include <errno.h>
 #include <pthread.h>
@@ -102,9 +114,11 @@ static void *work_loop(t_coder *coder, t_config *config)
 
 void *thread_work(void *arg)
 {
-	t_coder  *coder = NULL;
-	t_config *config = NULL;
+	t_coder  *coder;
+	t_config *config;
 
+	coder = NULL;
+	config = NULL;
 	coder = (t_coder *) arg;
 	if (!coder)
 		return (NULL);
@@ -117,10 +131,13 @@ void *thread_work(void *arg)
 	pthread_mutex_lock(&config->lock);
 	while (config->start == 0)
 		pthread_cond_wait(&config->cond, &config->lock);
+	pthread_mutex_lock(&coder->lock);
+	coder->last_compile = config->programm_start_time;
+	pthread_mutex_unlock(&coder->lock);
 	pthread_cond_broadcast(&config->cond);
 	pthread_mutex_unlock(&config->lock);
-	pthread_mutex_lock(&coder->lock);
-	gettimeofday(&coder->last_compile, NULL);
-	pthread_mutex_unlock(&coder->lock);
+
+	if (!(coder->id % 2))
+		usleep(config->time_to_compile * 100);
 	return (work_loop(coder, config));
 }

@@ -1,13 +1,25 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   parsing.c                                          :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: dgaillet <dgaillet@student.42lyon.fr>      +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2026/04/21 20:10:18 by dgaillet          #+#    #+#             */
+/*   Updated: 2026/04/21 20:10:19 by dgaillet         ###   ########lyon.fr   */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "codexion.h"
 #include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-static int check_inputs(int ac, char **av)
+static int	check_inputs(int ac, char **av)
 {
-	int i;
-	int j;
+	int	i;
+	int	j;
 
 	i = 0;
 	while (++i < ac)
@@ -31,7 +43,7 @@ static int check_inputs(int ac, char **av)
 	return (-1);
 }
 
-static void basic_config_init(char **av, t_config *config)
+static void	basic_config_init(char **av, t_config *config)
 {
 	config->number_of_coders = atoi(av[1]);
 	config->time_to_burnout = atoi(av[2]);
@@ -44,9 +56,9 @@ static void basic_config_init(char **av, t_config *config)
 	config->burnout = 0;
 }
 
-static t_config *get_config(char **av)
+static t_config	*get_config(char **av)
 {
-	t_config *config;
+	t_config	*config;
 
 	config = malloc(sizeof(t_config));
 	if (!config)
@@ -76,9 +88,9 @@ static t_config *get_config(char **av)
 	return (free(config), NULL);
 }
 
-t_config *parsing(int ac, char **av)
+t_config	*parsing(int ac, char **av)
 {
-	int res;
+	int	res;
 
 	if (ac != 9)
 		fprintf(stderr, "%s\n", "Invalid number of args.");

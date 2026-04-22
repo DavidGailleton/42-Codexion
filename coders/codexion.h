@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   codexion.h                                         :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: dgaillet <dgaillet@student.42lyon.fr>      +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2026/04/21 20:09:13 by dgaillet          #+#    #+#             */
+/*   Updated: 2026/04/21 20:11:31 by dgaillet         ###   ########lyon.fr   */
+/*                                                                            */
+/* ************************************************************************** */
+
 #ifndef CODEXION_H
 #define CODEXION_H
 
@@ -63,6 +75,7 @@ typedef struct s_dongle
 	struct timeval  last_release;
 	t_coder        *coder_l;
 	t_coder        *coder_r;
+	t_coder        *owner;
 } t_dongle;
 
 typedef struct s_coder

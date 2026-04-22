@@ -3,12 +3,7 @@ CC				= cc
 MAKE			+= --no-print-directory
 CCFLAGS		= -Wall -Wextra -Werror -pthread -MMD -MP
 CCFLAGS		+= -Icoders
-DEBUG_CCFLAGS = gcc -Wall -Wextra -Werror -Wpedantic \
-    -Wshadow -Wconversion -Wsign-conversion \
-    -Wcast-qual -Wwrite-strings -Wundef \
-    -Wstrict-prototypes -Wmissing-prototypes \
-    -Wformat=2 -Wnull-dereference -Wdouble-promotion \
-    -Wimplicit-fallthrough -Weverything -g \
+DEBUG_CCFLAGS = -g3
 ADDRSAN_FLAGS = -Wall -Wextra -Werror -g \
     -fsanitize=address,undefined -fno-omit-frame-pointer \
 

@@ -1,10 +1,22 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   compile_process.c                                  :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: dgaillet <dgaillet@student.42lyon.fr>      +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2026/04/21 20:09:36 by dgaillet          #+#    #+#             */
+/*   Updated: 2026/04/21 20:09:38 by dgaillet         ###   ########lyon.fr   */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "codexion.h"
 #include <pthread.h>
 #include <stdio.h>
 #include <sys/time.h>
 #include <unistd.h>
 
-void compiling(t_coder *coder, t_config *config)
+void	compiling(t_coder *coder, t_config *config)
 {
 	pthread_mutex_lock(&coder->lock);
 	gettimeofday(&coder->last_compile, NULL);
@@ -17,7 +29,7 @@ void compiling(t_coder *coder, t_config *config)
 	usleep(config->time_to_compile * 1000);
 }
 
-void refactoring(t_coder *coder, t_config *config)
+void	refactoring(t_coder *coder, t_config *config)
 {
 	pthread_mutex_lock(&config->printf_lock);
 	if (!get_burnout(config))
@@ -26,7 +38,7 @@ void refactoring(t_coder *coder, t_config *config)
 	usleep(config->time_to_refactor * 1000);
 }
 
-void debugging(t_coder *coder, t_config *config)
+void	debugging(t_coder *coder, t_config *config)
 {
 	pthread_mutex_lock(&config->printf_lock);
 	if (!get_burnout(config))
