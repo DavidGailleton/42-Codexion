@@ -16,10 +16,10 @@
 #include <stdlib.h>
 #include <sys/time.h>
 
-static int start_coders(t_coder *coders, t_config *config)
+static int	start_coders(t_coder *coders, t_config *config)
 {
-	int      i;
-	t_coder *first;
+	int		i;
+	t_coder	*first;
 
 	first = coders;
 	i = 0;
@@ -28,7 +28,7 @@ static int start_coders(t_coder *coders, t_config *config)
 	{
 		pthread_create(&coders->thread, NULL, thread_work, coders);
 		if (i + 2 < config->number_of_coders)
-			coders = ((t_coder *) (coders->next))->next;
+			coders = ((t_coder *)(coders->next))->next;
 		i += 2;
 	}
 	coders = first->next;
@@ -37,7 +37,7 @@ static int start_coders(t_coder *coders, t_config *config)
 	{
 		pthread_create(&coders->thread, NULL, thread_work, coders);
 		if (i + 2 < config->number_of_coders)
-			coders = ((t_coder *) (coders->next))->next;
+			coders = ((t_coder *)(coders->next))->next;
 		i += 2;
 	}
 	pthread_create(&config->monitor, NULL, burnout_checker, coders);
@@ -52,10 +52,10 @@ static int start_coders(t_coder *coders, t_config *config)
 	return (1);
 }
 
-int main(int ac, char **av)
+int	main(int ac, char **av)
 {
-	t_config *config;
-	t_coder  *coders;
+	t_config	*config;
+	t_coder		*coders;
 
 	config = parsing(ac, av);
 	if (!config)
@@ -64,7 +64,8 @@ int main(int ac, char **av)
 	if (!coders)
 	{
 		destroy(coders, config);
-		fprintf(stderr, "%s\n", "An error occurred during coders initialization");
+		fprintf(stderr, "%s\n",
+			"An error occurred during coders initialization");
 		return (1);
 	}
 	start_coders(coders, config);

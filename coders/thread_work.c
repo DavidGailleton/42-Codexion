@@ -19,11 +19,11 @@
 #include <time.h>
 #include <unistd.h>
 
-static int has_priority(t_coder *coder, t_config *config, t_dongle *dongle)
+static int	has_priority(t_coder *coder, t_config *config, t_dongle *dongle)
 {
-	long long coder_remain;
-	long long req_remain;
-	t_coder  *other_coder;
+	long long	coder_remain;
+	long long	req_remain;
+	t_coder		*other_coder;
 
 	if (config->scheduler == FIFO)
 		return (1);
@@ -39,14 +39,15 @@ static int has_priority(t_coder *coder, t_config *config, t_dongle *dongle)
 	req_remain = get_remain_before_burnout(config, other_coder);
 	if (coder_remain < req_remain || remain_compile(config, other_coder) <= 0)
 		return (1);
-	if (coder_remain == req_remain && remain_compile(config, coder) >= remain_compile(config, other_coder))
+	if (coder_remain == req_remain && remain_compile(config,
+			coder) >= remain_compile(config, other_coder))
 		return (1);
 	return (0);
 }
 
-static int request_dongle(t_coder *coder, t_dongle *dongle, t_config *config)
+static int	request_dongle(t_coder *coder, t_dongle *dongle, t_config *config)
 {
-	struct timespec abs_burnout_t;
+	struct timespec	abs_burnout_t;
 
 	abs_burnout_t = abs_time_burnout(config, coder);
 	if (!dongle)
@@ -56,7 +57,8 @@ static int request_dongle(t_coder *coder, t_dongle *dongle, t_config *config)
 	while (!has_priority(coder, config, dongle))
 	{
 		pthread_cond_broadcast(&dongle->cond);
-		if (pthread_cond_timedwait(&dongle->cond, &dongle->lock, &abs_burnout_t) == ETIMEDOUT)
+		if (pthread_cond_timedwait(&dongle->cond, &dongle->lock,
+				&abs_burnout_t) == ETIMEDOUT)
 		{
 			pthread_cond_broadcast(&dongle->cond);
 			pthread_mutex_unlock(&dongle->lock);
@@ -65,7 +67,8 @@ static int request_dongle(t_coder *coder, t_dongle *dongle, t_config *config)
 	}
 	pthread_mutex_lock(&config->printf_lock);
 	if (!get_burnout(config))
-		printf("%lld %d has taken a dongle\n", get_process_time(config), coder->id);
+		printf("%lld %d has taken a dongle\n", get_process_time(config),
+			coder->id);
 	pthread_mutex_unlock(&config->printf_lock);
 	if (get_burnout(config))
 	{
@@ -75,18 +78,19 @@ static int request_dongle(t_coder *coder, t_dongle *dongle, t_config *config)
 	return (1);
 }
 
-static void release_dongle(t_dongle *dongle)
+static void	release_dongle(t_dongle *dongle)
 {
 	if (!dongle)
-		return;
+		return ;
 	gettimeofday(&dongle->last_release, NULL);
 	pthread_cond_broadcast(&dongle->cond);
 	pthread_mutex_unlock(&dongle->lock);
 }
 
-static void *work_loop(t_coder *coder, t_config *config)
+static void	*work_loop(t_coder *coder, t_config *config)
 {
-	while (coder->total_compile < config->number_of_compiles_required && !get_burnout(config))
+	while (coder->total_compile < config->number_of_compiles_required
+		&& !get_burnout(config))
 	{
 		if (coder->id % 2)
 		{
@@ -113,15 +117,15 @@ static void *work_loop(t_coder *coder, t_config *config)
 	return (coder);
 }
 
-void *thread_work(void *arg)
+void	*thread_work(void *arg)
 {
-	t_coder       *coder;
-	t_config      *config;
-	struct timeval time;
+	t_coder			*coder;
+	t_config		*config;
+	struct timeval	time;
 
 	coder = NULL;
 	config = NULL;
-	coder = (t_coder *) arg;
+	coder = (t_coder *)arg;
 	if (!coder)
 		return (NULL);
 	config = coder->config;

@@ -35,6 +35,22 @@ static t_dongle *create_dongle(int id)
 	return (NULL);
 }
 
+static int add_dongles(int id, t_coder *prev_coder, t_coder *coder)
+{
+	coder->dongle_r = NULL;
+	coder->dongle_r = create_dongle(id);
+	if (!coder->dongle_r)
+		return (0);
+	coder->dongle_l = NULL;
+	if (prev_coder)
+	{
+		coder->dongle_l = prev_coder->dongle_r;
+		prev_coder->next = coder;
+	}
+	coder->pre = prev_coder;
+	return (1);
+}
+
 static t_coder *create_coder(int id, t_coder *prev_coder, t_config *config)
 {
 	t_coder *coder;
@@ -44,35 +60,18 @@ static t_coder *create_coder(int id, t_coder *prev_coder, t_config *config)
 		return (NULL);
 	coder->id = id;
 	coder->total_compile = 0;
-	coder->dongle_r = NULL;
-	coder->dongle_r = create_dongle(id);
-	coder->dongle_l = NULL;
 	coder->last_compile.tv_sec = 0;
-	if (!coder->dongle_r)
-	{
-		free(coder);
-		return (NULL);
-	}
-	if (prev_coder)
-	{
-		coder->dongle_l = prev_coder->dongle_r;
-		prev_coder->next = coder;
-	}
-	else
-		coder->dongle_l = NULL;
-	coder->pre = prev_coder;
+	if (!add_dongles(id, prev_coder, coder))
+		return (free(coder), NULL);
 	coder->next = NULL;
 	coder->config = config;
 	coder->burned_out = 0;
 	pthread_mutex_init(&coder->lock, NULL);
 	if (pthread_cond_init(&coder->cond, NULL))
-	{
 		pthread_mutex_destroy(&coder->lock);
-		free(coder);
-	}
 	else
 		return (coder);
-	return (NULL);
+	return (free(coder), NULL);
 }
 
 static void set_coder_to_dongle(t_coder *coders, t_config *config)

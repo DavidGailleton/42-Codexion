@@ -4,8 +4,12 @@ MAKE			+= --no-print-directory
 CCFLAGS		= -Wall -Wextra -Werror -pthread -MMD -MP
 CCFLAGS		+= -Icoders
 DEBUG_CCFLAGS = -g3
-ADDRSAN_FLAGS = -Wall -Wextra -Werror -g \
-    -fsanitize=address,undefined -fno-omit-frame-pointer \
+CLANG_FLAGS = -Wall -Wextra -Werror -Wpedantic \
+  -Wshadow -Wconversion -Wsign-conversion -Wcast-qual -Wstrict-prototypes \
+  -Wmissing-prototypes -Wpointer-arith -Wundef -Wwrite-strings \
+  -Winit-self -Wswitch-enum -Wformat=2 -Wunreachable-code \
+  -pthread -g3 -O0 -fno-omit-frame-pointer \
+  -fsanitize=address,undefined \
 
 SRC				= coders/main.c \
 						coders/init.c \
@@ -26,10 +30,7 @@ $(NAME): $(OBJ)
 	$(CC) $(CCFLAGS) $(OBJ) -o $(NAME) 
 
 debug:
-	$(CC) $(DEBUG_CCFLAGS) $(SRC) -pthread -o $(NAME) 
-
-addrsan:
-	$(CC) $(ADDRSAN_FLAGS) $(SRC) -pthread -o $(NAME) 
+	$(CC) $(DEBUG_CCFLAGS) -Icoders $(SRC) -pthread -o $(NAME) 
 
 %.o: %.c Makefile
 	$(CC) $(CCFLAGS) -c $< -o $@
@@ -41,6 +42,13 @@ fclean: clean
 	$(RM) $(NAME)
 
 re: fclean all
+
+lint:
+	norminette
+	clang $(CLANG_FLAGS) $(SRC) -Icoders
+
+format:
+	c_formatter_42 $(SRC)
 
 FORCE: ;
 -include $(SRC:.c=.d)
