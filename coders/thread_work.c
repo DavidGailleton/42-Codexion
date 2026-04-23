@@ -11,39 +11,12 @@
 /* ************************************************************************** */
 
 #include "codexion.h"
-#include <bits/types/struct_timespec.h>
 #include <errno.h>
 #include <pthread.h>
 #include <stdio.h>
 #include <sys/time.h>
 #include <time.h>
 #include <unistd.h>
-
-static int	has_priority(t_coder *coder, t_config *config, t_dongle *dongle)
-{
-	long long	coder_remain;
-	long long	req_remain;
-	t_coder		*other_coder;
-
-	if (config->scheduler == FIFO)
-		return (1);
-	if (config->scheduler != EDF)
-		return (0);
-	if (dongle->coder_l != coder)
-		other_coder = dongle->coder_l;
-	else
-		other_coder = dongle->coder_r;
-	if (!other_coder)
-		return (1);
-	coder_remain = get_remain_before_burnout(config, coder);
-	req_remain = get_remain_before_burnout(config, other_coder);
-	if (coder_remain < req_remain || remain_compile(config, other_coder) <= 0)
-		return (1);
-	if (coder_remain == req_remain && remain_compile(config,
-			coder) >= remain_compile(config, other_coder))
-		return (1);
-	return (0);
-}
 
 static int	request_dongle(t_coder *coder, t_dongle *dongle, t_config *config)
 {
@@ -59,11 +32,7 @@ static int	request_dongle(t_coder *coder, t_dongle *dongle, t_config *config)
 		pthread_cond_broadcast(&dongle->cond);
 		if (pthread_cond_timedwait(&dongle->cond, &dongle->lock,
 				&abs_burnout_t) == ETIMEDOUT)
-		{
-			pthread_cond_broadcast(&dongle->cond);
-			pthread_mutex_unlock(&dongle->lock);
 			return (0);
-		}
 	}
 	pthread_mutex_lock(&config->printf_lock);
 	if (!get_burnout(config))
@@ -71,10 +40,7 @@ static int	request_dongle(t_coder *coder, t_dongle *dongle, t_config *config)
 			coder->id);
 	pthread_mutex_unlock(&config->printf_lock);
 	if (get_burnout(config))
-	{
-		pthread_mutex_unlock(&dongle->lock);
 		return (0);
-	}
 	return (1);
 }
 
@@ -87,25 +53,38 @@ static void	release_dongle(t_dongle *dongle)
 	pthread_mutex_unlock(&dongle->lock);
 }
 
+static void	*request_dongles(t_coder *coder, t_config *config)
+{
+	if (coder->id % 2)
+	{
+		if (!request_dongle(coder, coder->dongle_r, config))
+			return (release_dongle(coder->dongle_r), NULL);
+		if (!request_dongle(coder, coder->dongle_l, config))
+		{
+			release_dongle(coder->dongle_l);
+			return (release_dongle(coder->dongle_r), NULL);
+		}
+	}
+	if (!(coder->id % 2))
+	{
+		if (!request_dongle(coder, coder->dongle_l, config))
+			return (release_dongle(coder->dongle_l), NULL);
+		if (!request_dongle(coder, coder->dongle_r, config))
+		{
+			release_dongle(coder->dongle_r);
+			return (release_dongle(coder->dongle_l), NULL);
+		}
+	}
+	return (coder);
+}
+
 static void	*work_loop(t_coder *coder, t_config *config)
 {
 	while (coder->total_compile < config->number_of_compiles_required
 		&& !get_burnout(config))
 	{
-		if (coder->id % 2)
-		{
-			if (!request_dongle(coder, coder->dongle_r, config))
-				return (NULL);
-			if (!request_dongle(coder, coder->dongle_l, config))
-				return (release_dongle(coder->dongle_r), NULL);
-		}
-		if (!(coder->id % 2))
-		{
-			if (!request_dongle(coder, coder->dongle_l, config))
-				return (NULL);
-			if (!request_dongle(coder, coder->dongle_r, config))
-				return (release_dongle(coder->dongle_l), NULL);
-		}
+		if (!request_dongles(coder, config))
+			return (NULL);
 		compiling(coder, config);
 		release_dongle(coder->dongle_r);
 		release_dongle(coder->dongle_l);

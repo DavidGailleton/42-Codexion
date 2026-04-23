@@ -48,7 +48,7 @@ lint:
 	clang $(CLANG_FLAGS) $(SRC) -Icoders
 
 format:
-	c_formatter_42 $(SRC)
+	c_formatter_42 $(SRC) coders/codexion.h
 
 FORCE: ;
 -include $(SRC:.c=.d)

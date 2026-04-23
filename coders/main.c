@@ -16,14 +16,13 @@
 #include <stdlib.h>
 #include <sys/time.h>
 
-static int	start_coders(t_coder *coders, t_config *config)
+static void	create_coders(t_coder *coders, t_config *config)
 {
 	int		i;
 	t_coder	*first;
 
 	first = coders;
 	i = 0;
-	gettimeofday(&config->programm_start_time, NULL);
 	while (i < config->number_of_coders)
 	{
 		pthread_create(&coders->thread, NULL, thread_work, coders);
@@ -40,9 +39,17 @@ static int	start_coders(t_coder *coders, t_config *config)
 			coders = ((t_coder *)(coders->next))->next;
 		i += 2;
 	}
+}
+
+static int	start_coders(t_coder *coders, t_config *config)
+{
+	int	i;
+
+	i = 0;
+	gettimeofday(&config->programm_start_time, NULL);
+	create_coders(coders, config);
 	pthread_create(&config->monitor, NULL, burnout_checker, coders);
 	i = 0;
-	coders = first;
 	while (i++ < config->number_of_coders)
 	{
 		pthread_join(coders->thread, NULL);

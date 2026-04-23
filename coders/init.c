@@ -14,28 +14,7 @@
 #include <pthread.h>
 #include <stdlib.h>
 
-static t_dongle *create_dongle(int id)
-{
-	t_dongle *dongle;
-
-	dongle = malloc(sizeof(t_dongle));
-	if (!dongle)
-		return (NULL);
-	dongle->id = id;
-	dongle->last_release.tv_sec = 0;
-	dongle->last_release.tv_usec = 0;
-	pthread_mutex_init(&dongle->lock, NULL);
-	if (pthread_cond_init(&dongle->cond, NULL))
-	{
-		pthread_mutex_destroy(&dongle->lock);
-		free(dongle);
-	}
-	else
-		return (dongle);
-	return (NULL);
-}
-
-static int add_dongles(int id, t_coder *prev_coder, t_coder *coder)
+static int	add_dongles(int id, t_coder *prev_coder, t_coder *coder)
 {
 	coder->dongle_r = NULL;
 	coder->dongle_r = create_dongle(id);
@@ -51,9 +30,9 @@ static int add_dongles(int id, t_coder *prev_coder, t_coder *coder)
 	return (1);
 }
 
-static t_coder *create_coder(int id, t_coder *prev_coder, t_config *config)
+static t_coder	*create_coder(int id, t_coder *prev_coder, t_config *config)
 {
-	t_coder *coder;
+	t_coder	*coder;
 
 	coder = malloc(sizeof(t_coder));
 	if (!coder)
@@ -74,9 +53,9 @@ static t_coder *create_coder(int id, t_coder *prev_coder, t_config *config)
 	return (free(coder), NULL);
 }
 
-static void set_coder_to_dongle(t_coder *coders, t_config *config)
+static void	set_coder_to_dongle(t_coder *coders, t_config *config)
 {
-	int i;
+	int	i;
 
 	i = 0;
 	while (i++ < config->number_of_coders)
@@ -88,10 +67,11 @@ static void set_coder_to_dongle(t_coder *coders, t_config *config)
 			coders->dongle_r->coder_r = NULL;
 	}
 }
-static t_coder *create_coders(t_config *config, t_coder *first_coder)
+
+static t_coder	*create_coders(t_config *config, t_coder *first_coder)
 {
-	t_coder *temp;
-	int      i;
+	t_coder	*temp;
+	int		i;
 
 	i = 0;
 	temp = first_coder;
@@ -114,9 +94,9 @@ static t_coder *create_coders(t_config *config, t_coder *first_coder)
 	return (first_coder);
 }
 
-t_coder *init_coders(t_config *config)
+t_coder	*init_coders(t_config *config)
 {
-	t_coder *first_coder;
+	t_coder	*first_coder;
 
 	first_coder = NULL;
 	if (config->number_of_coders > 0)

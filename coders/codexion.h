@@ -118,5 +118,8 @@ void					set_burnout(t_config *config, int value);
 
 void					wait_dongle_cooldown(t_config *config,
 							t_dongle *dongle);
+int						has_priority(t_coder *coder, t_config *config,
+							t_dongle *dongle);
+t_dongle				*create_dongle(int id);
 
 #endif
