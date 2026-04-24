@@ -26,9 +26,8 @@ static int request_dongle(t_coder *coder, t_dongle *dongle, t_config *config)
 	if (!dongle)
 		return (0);
 	pthread_mutex_lock(&dongle->lock);
-	while (dongle->owner || !has_priority(coder, config, dongle))
+	while (!has_priority(coder, config, dongle))
 	{
-		pthread_cond_broadcast(&dongle->cond);
 		if (pthread_cond_timedwait(&dongle->cond, &dongle->lock, &abs_burnout_t) == ETIMEDOUT)
 		{
 			pthread_cond_broadcast(&dongle->cond);
@@ -37,9 +36,9 @@ static int request_dongle(t_coder *coder, t_dongle *dongle, t_config *config)
 		}
 	}
 	dongle->owner = coder;
-	wait_dongle_cooldown(config, dongle);
 	pthread_cond_broadcast(&dongle->cond);
 	pthread_mutex_unlock(&dongle->lock);
+	wait_dongle_cooldown(config, dongle);
 	pthread_mutex_lock(&config->printf_lock);
 	if (!get_burnout(config))
 		printf("%lld %d has taken a dongle\n", get_process_time(config), coder->id);
