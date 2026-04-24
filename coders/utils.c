@@ -15,10 +15,10 @@
 #include <stdlib.h>
 #include <sys/time.h>
 
-int	remain_compile(t_config *config, t_coder *coder)
+int remain_compile(t_config *config, t_coder *coder)
 {
-	int	coder_compile;
-	int	compiles_required;
+	int coder_compile;
+	int compiles_required;
 
 	pthread_mutex_lock(&coder->lock);
 	coder_compile = coder->total_compile;
@@ -29,12 +29,14 @@ int	remain_compile(t_config *config, t_coder *coder)
 	return (compiles_required - coder_compile);
 }
 
-int	has_priority(t_coder *coder, t_config *config, t_dongle *dongle)
+int has_priority(t_coder *coder, t_config *config, t_dongle *dongle)
 {
-	long long	coder_remain;
-	long long	req_remain;
-	t_coder		*other_coder;
+	long long coder_remain;
+	long long req_remain;
+	t_coder  *other_coder;
 
+	if (dongle->owner)
+		return (0);
 	if (config->scheduler == FIFO)
 		return (1);
 	if (config->scheduler != EDF)
@@ -49,15 +51,14 @@ int	has_priority(t_coder *coder, t_config *config, t_dongle *dongle)
 	req_remain = get_remain_before_burnout(config, other_coder);
 	if (coder_remain < req_remain || remain_compile(config, other_coder) <= 0)
 		return (1);
-	if (coder_remain == req_remain && remain_compile(config,
-			coder) >= remain_compile(config, other_coder))
+	if (coder_remain == req_remain && remain_compile(config, coder) >= remain_compile(config, other_coder))
 		return (1);
 	return (0);
 }
 
-t_dongle	*create_dongle(int id)
+t_dongle *create_dongle(int id)
 {
-	t_dongle	*dongle;
+	t_dongle *dongle;
 
 	dongle = malloc(sizeof(t_dongle));
 	if (!dongle)
@@ -65,6 +66,7 @@ t_dongle	*create_dongle(int id)
 	dongle->id = id;
 	dongle->last_release.tv_sec = 0;
 	dongle->last_release.tv_usec = 0;
+	dongle->owner = NULL;
 	pthread_mutex_init(&dongle->lock, NULL);
 	if (pthread_cond_init(&dongle->cond, NULL))
 	{
