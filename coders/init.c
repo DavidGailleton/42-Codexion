@@ -16,17 +16,15 @@
 
 static int	add_dongles(int id, t_coder *prev_coder, t_coder *coder)
 {
-	coder->dongle_r = NULL;
 	coder->dongle_r = create_dongle(id);
 	if (!coder->dongle_r)
 		return (0);
-	coder->dongle_l = NULL;
 	if (prev_coder)
 	{
 		coder->dongle_l = prev_coder->dongle_r;
 		prev_coder->next = coder;
+		coder->pre = prev_coder;
 	}
-	coder->pre = prev_coder;
 	return (1);
 }
 
