@@ -14,6 +14,7 @@
 #include <pthread.h>
 #include <stdlib.h>
 #include <sys/time.h>
+#include <unistd.h>
 
 int	remain_compile(t_config *config, t_coder *coder)
 {
@@ -80,4 +81,26 @@ t_dongle	*create_dongle(int id)
 	else
 		return (dongle);
 	return (NULL);
+}
+
+void	improved_usleep(unsigned int time_ms, t_config *config)
+{
+	while (time_ms > 0)
+	{
+		pthread_mutex_lock(&config->lock);
+		if (config->burnout)
+		{
+			pthread_mutex_unlock(&config->lock);
+			return ;
+		}
+		pthread_mutex_unlock(&config->lock);
+		if (time_ms >= 10)
+			usleep(10000);
+		else
+		{
+			usleep(time_ms * 1000);
+			return ;
+		}
+		time_ms -= 10;
+	}
 }

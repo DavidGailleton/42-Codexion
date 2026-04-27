@@ -89,5 +89,5 @@ void	wait_dongle_cooldown(t_config *config, t_dongle *dongle)
 	pthread_mutex_unlock(&dongle->lock);
 	remain_ms = config->dongle_cooldown - (now_ms - last_release_ms);
 	if (remain_ms > 0 && remain_ms < UINT_MAX / 1000)
-		usleep((unsigned int)remain_ms * 1000);
+		improved_usleep((unsigned int)remain_ms, config);
 }

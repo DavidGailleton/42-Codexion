@@ -115,6 +115,7 @@ void	*thread_work(void *arg)
 	coder->last_compile = time;
 	pthread_mutex_unlock(&coder->lock);
 	if (!(coder->id % 2))
-		usleep(config->time_to_compile * 500 + config->dongle_cooldown * 500);
+		improved_usleep(config->time_to_compile * 500 + config->dongle_cooldown
+			* 500, config);
 	return (work_loop(coder, config));
 }

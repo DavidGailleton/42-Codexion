@@ -121,5 +121,6 @@ void					wait_dongle_cooldown(t_config *config,
 int						has_priority(t_coder *coder, t_config *config,
 							t_dongle *dongle);
 t_dongle				*create_dongle(int id);
+void					improved_usleep(__useconds_t time_ms, t_config *config);
 
 #endif
