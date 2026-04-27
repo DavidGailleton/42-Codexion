@@ -72,7 +72,7 @@ typedef struct s_dongle
 	int					id;
 	pthread_mutex_t		lock;
 	pthread_cond_t		cond;
-	struct timeval		last_release;
+	__useconds_t		last_release;
 	t_coder				*coder_l;
 	t_coder				*coder_r;
 	t_coder				*owner;
@@ -83,7 +83,7 @@ typedef struct s_coder
 	int					id;
 	int					total_compile;
 	__useconds_t		created_at;
-	struct timeval		last_compile;
+	__useconds_t		last_compile;
 	t_dongle			*dongle_r;
 	t_dongle			*dongle_l;
 	void				*next;
@@ -101,8 +101,8 @@ t_coder					*init_coders(t_config *config);
 void					*thread_work(void *arg);
 int						destroy(t_coder *coders, t_config *config);
 
-long long				get_process_time(t_config *config);
-long long				get_remain_before_burnout(t_config *config,
+unsigned int			get_process_time(t_config *config);
+unsigned int			get_remain_before_burnout(t_config *config,
 							t_coder *coder);
 struct timespec			abs_time_burnout(t_config *config, t_coder *coder);
 int						remain_compile(t_config *config, t_coder *coder);

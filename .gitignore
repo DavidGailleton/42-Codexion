@@ -58,3 +58,5 @@ codexion
 
 test/
 venv/
+
+.clang*

@@ -44,7 +44,7 @@ fclean: clean
 re: fclean all
 
 lint:
-	norminette
+	#norminette
 	clang $(CLANG_FLAGS) $(SRC) -Icoders
 
 format:

@@ -33,8 +33,7 @@ void	*burnout_checker(void *arg)
 		{
 			set_burnout(config, 1);
 			pthread_mutex_lock(&config->printf_lock);
-			printf("%lld %d burned out\n", get_process_time(config),
-				coders->id);
+			printf("%u %d burned out\n", get_process_time(config), coders->id);
 			pthread_mutex_unlock(&config->printf_lock);
 			return (NULL);
 		}
