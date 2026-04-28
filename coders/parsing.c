@@ -22,6 +22,8 @@ static int	check_inputs(int ac, char **av)
 	int	j;
 
 	i = 0;
+	if (atoi(av[1]) == 0)
+		return (INVALID_NB_CODERS);
 	while (++i < ac)
 	{
 		if (i == ac - 1)
@@ -88,7 +90,7 @@ t_config	*parsing(int ac, char **av)
 	int	res;
 
 	if (ac != 9)
-		fprintf(stderr, "%s\n", "Invalid number of args.");
+		return (fprintf(stderr, "%s\n", "Invalid number of args."), NULL);
 	res = check_inputs(ac, av);
 	if (!res)
 		return (get_config(av));
@@ -96,6 +98,8 @@ t_config	*parsing(int ac, char **av)
 		fprintf(stderr, "%s\n", "Invalid int in args");
 	else if (res == INVALID_SCHEDULER)
 		fprintf(stderr, "%s\n", "Invalid scheduler specified");
+	else if (res == INVALID_NB_CODERS)
+		fprintf(stderr, "%s\n", "Number of coders should be at least 1");
 	else
 		fprintf(stderr, "%s\n", "An error occured during parsing");
 	return (NULL);
