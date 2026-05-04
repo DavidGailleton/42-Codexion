@@ -37,7 +37,7 @@ static t_coder	*create_coder(int id, t_coder *prev_coder, t_config *config)
 		return (NULL);
 	coder->id = id;
 	coder->total_compile = 0;
-	coder->last_compile = 0;
+	coder->last_compile = -1;
 	if (!add_dongles(id, prev_coder, coder))
 		return (free(coder), NULL);
 	coder->next = NULL;

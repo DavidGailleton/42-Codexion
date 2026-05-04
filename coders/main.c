@@ -62,7 +62,7 @@ static void	join_pthread(t_coder *coders, t_config *config)
 static void	start_pthread(t_coder *coders, t_config *config)
 {
 	gettimeofday(&config->programm_start_time, NULL);
-	if (create_coders(coders, config))
+	if (pthread_create(&config->monitor, NULL, burnout_checker, coders))
 	{
 		config->burnout = 1;
 		fprintf(stderr, "%s\n",
@@ -70,7 +70,7 @@ static void	start_pthread(t_coder *coders, t_config *config)
 	}
 	else
 	{
-		if (pthread_create(&config->monitor, NULL, burnout_checker, coders))
+		if (create_coders(coders, config))
 		{
 			config->burnout = 1;
 			fprintf(stderr, "%s\n",
