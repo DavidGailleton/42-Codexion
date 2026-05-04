@@ -61,7 +61,6 @@ static void	join_pthread(t_coder *coders, t_config *config)
 
 static void	start_pthread(t_coder *coders, t_config *config)
 {
-	gettimeofday(&config->programm_start_time, NULL);
 	if (pthread_create(&config->monitor, NULL, burnout_checker, coders))
 	{
 		config->burnout = 1;
@@ -96,6 +95,10 @@ int	main(int ac, char **av)
 		return (1);
 	}
 	start_pthread(coders, config);
+	pthread_mutex_lock(&config->lock);
+	gettimeofday(&config->programm_start_time, NULL);
+	config->start = 1;
+	pthread_mutex_unlock(&config->lock);
 	join_pthread(coders, config);
 	destroy(coders, config);
 }

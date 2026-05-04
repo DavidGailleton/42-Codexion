@@ -16,9 +16,9 @@
 #include <sys/time.h>
 #include <unistd.h>
 
-static int	coder_started(t_coder *coder)
+static int coder_started(t_coder *coder)
 {
-	suseconds_t	temp;
+	suseconds_t temp;
 
 	pthread_mutex_lock(&coder->lock);
 	temp = coder->last_compile;
@@ -28,7 +28,7 @@ static int	coder_started(t_coder *coder)
 	return (1);
 }
 
-static void	burned_out(t_config *config, t_coder *coder)
+static void burned_out(t_config *config, t_coder *coder)
 {
 	set_burnout(config, 1);
 	pthread_mutex_lock(&config->printf_lock);
@@ -36,26 +36,39 @@ static void	burned_out(t_config *config, t_coder *coder)
 	pthread_mutex_unlock(&config->printf_lock);
 }
 
-void	*burnout_checker(void *arg)
+void wait_start(t_config *config)
 {
-	t_coder		*coders;
-	t_config	*config;
-	int			i;
+	while (1)
+	{
+		pthread_mutex_lock(&config->lock);
+		if (config->start)
+			break;
+		pthread_mutex_unlock(&config->lock);
+		usleep(100);
+	}
+	pthread_mutex_unlock(&config->lock);
+}
 
-	coders = (t_coder *)arg;
+void *burnout_checker(void *arg)
+{
+	t_coder  *coders;
+	t_config *config;
+	int       i;
+
+	coders = (t_coder *) arg;
 	config = coders->config;
 	i = 0;
+	wait_start(config);
 	while (i++ < config->number_of_coders)
 	{
 		if (!coder_started(coders))
 		{
 			coders = coders->next;
-			continue ;
+			continue;
 		}
 		if (remain_compile(config, coders) > 0)
 			i = 0;
-		if (get_remain_before_burnout(config, coders) <= 0
-			&& remain_compile(config, coders) > 0)
+		if (get_remain_before_burnout(config, coders) <= 0 && remain_compile(config, coders) > 0)
 		{
 			burned_out(config, coders);
 			return (NULL);

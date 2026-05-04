@@ -3,7 +3,7 @@ CC				= cc
 MAKE			+= --no-print-directory
 CCFLAGS		= -Wall -Wextra -Werror -pthread -MMD -MP
 CCFLAGS		+= -Icoders
-DEBUG_CCFLAGS = -g3
+DEBUG_CCFLAGS = -g3 -fsanitize=thread
 CLANG_FLAGS = -Wall -Wextra -Werror -Wpedantic \
   -Wshadow -Wconversion -Wsign-conversion -Wcast-qual -Wstrict-prototypes \
   -Wmissing-prototypes -Wpointer-arith -Wundef -Wwrite-strings \

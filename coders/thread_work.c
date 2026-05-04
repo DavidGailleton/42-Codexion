@@ -18,9 +18,9 @@
 #include <time.h>
 #include <unistd.h>
 
-static int	request_dongle(t_coder *coder, t_dongle *dongle, t_config *config)
+static int request_dongle(t_coder *coder, t_dongle *dongle, t_config *config)
 {
-	struct timespec	abs_burnout_t;
+	struct timespec abs_burnout_t;
 
 	abs_burnout_t = abs_time_burnout(config, coder);
 	if (!dongle)
@@ -29,8 +29,7 @@ static int	request_dongle(t_coder *coder, t_dongle *dongle, t_config *config)
 	while (!has_priority(coder, config, dongle))
 	{
 		pthread_cond_broadcast(&dongle->cond);
-		if (pthread_cond_timedwait(&dongle->cond, &dongle->lock,
-				&abs_burnout_t) == ETIMEDOUT)
+		if (pthread_cond_timedwait(&dongle->cond, &dongle->lock, &abs_burnout_t) == ETIMEDOUT)
 		{
 			pthread_cond_broadcast(&dongle->cond);
 			return (pthread_mutex_unlock(&dongle->lock), 0);
@@ -44,10 +43,10 @@ static int	request_dongle(t_coder *coder, t_dongle *dongle, t_config *config)
 	return (1);
 }
 
-static void	release_dongle(t_dongle *dongle, t_config *config)
+static void release_dongle(t_dongle *dongle, t_config *config)
 {
 	if (!dongle)
-		return ;
+		return;
 	pthread_mutex_lock(&dongle->lock);
 	dongle->last_release = get_process_time(config);
 	dongle->owner = NULL;
@@ -55,7 +54,7 @@ static void	release_dongle(t_dongle *dongle, t_config *config)
 	pthread_mutex_unlock(&dongle->lock);
 }
 
-static void	*request_dongles(t_coder *coder, t_config *config)
+static void *request_dongles(t_coder *coder, t_config *config)
 {
 	if (coder->id % 2)
 	{
@@ -76,10 +75,9 @@ static void	*request_dongles(t_coder *coder, t_config *config)
 	return (coder);
 }
 
-static void	*work_loop(t_coder *coder, t_config *config)
+static void *work_loop(t_coder *coder, t_config *config)
 {
-	while (coder->total_compile < config->number_of_compiles_required
-		&& !get_burnout(config))
+	while (coder->total_compile < config->number_of_compiles_required && !get_burnout(config))
 	{
 		if (!request_dongles(coder, config))
 			return (NULL);
@@ -94,14 +92,14 @@ static void	*work_loop(t_coder *coder, t_config *config)
 	return (coder);
 }
 
-void	*thread_work(void *arg)
+void *thread_work(void *arg)
 {
-	t_coder		*coder;
-	t_config	*config;
+	t_coder  *coder;
+	t_config *config;
 
 	coder = NULL;
 	config = NULL;
-	coder = (t_coder *)arg;
+	coder = (t_coder *) arg;
 	if (!coder)
 		return (NULL);
 	config = coder->config;
@@ -110,8 +108,8 @@ void	*thread_work(void *arg)
 	pthread_mutex_lock(&coder->lock);
 	coder->last_compile = 0;
 	pthread_mutex_unlock(&coder->lock);
-	if (!(coder->id % 2))
-		improved_usleep(config->time_to_compile / 2 + config->dongle_cooldown
-			/ 2, config);
+	wait_start(config);
+	if (coder->id % 2 == 0)
+		improved_usleep(config->time_to_compile, config);
 	return (work_loop(coder, config));
 }

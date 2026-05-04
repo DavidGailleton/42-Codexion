@@ -17,10 +17,10 @@
 #include <sys/time.h>
 #include <unistd.h>
 
-int remain_compile(t_config *config, t_coder *coder)
+int	remain_compile(t_config *config, t_coder *coder)
 {
-	int coder_compile;
-	int compiles_required;
+	int	coder_compile;
+	int	compiles_required;
 
 	pthread_mutex_lock(&coder->lock);
 	coder_compile = coder->total_compile;
@@ -31,11 +31,11 @@ int remain_compile(t_config *config, t_coder *coder)
 	return (compiles_required - coder_compile);
 }
 
-int has_priority(t_coder *coder, t_config *config, t_dongle *dongle)
+int	has_priority(t_coder *coder, t_config *config, t_dongle *dongle)
 {
-	int      coder_last_compile;
-	int      other_last_compile;
-	t_coder *other_coder;
+	int		coder_last_compile;
+	int		other_last_compile;
+	t_coder	*other_coder;
 
 	if (dongle->owner != NULL)
 		return (0);
@@ -52,22 +52,23 @@ int has_priority(t_coder *coder, t_config *config, t_dongle *dongle)
 		return (1);
 	coder_last_compile = get_last_compile(coder);
 	other_last_compile = get_last_compile(other_coder);
-	if (coder_last_compile < other_last_compile || remain_compile(config, other_coder) <= 0)
+	if (coder_last_compile < other_last_compile || remain_compile(config,
+			other_coder) <= 0)
 		return (1);
 	if (coder_last_compile == other_last_compile && coder->id % 2)
 		return (1);
 	return (0);
 }
 
-t_dongle *create_dongle(int id)
+t_dongle	*create_dongle(int id)
 {
-	t_dongle *dongle;
+	t_dongle	*dongle;
 
 	dongle = malloc(sizeof(t_dongle));
 	if (!dongle)
 		return (NULL);
 	dongle->id = id;
-	dongle->last_release = 0;
+	dongle->last_release = -1;
 	dongle->owner = NULL;
 	dongle->coder_l = NULL;
 	dongle->coder_r = NULL;
@@ -82,7 +83,7 @@ t_dongle *create_dongle(int id)
 	return (NULL);
 }
 
-void improved_usleep(suseconds_t time_ms, t_config *config)
+void	improved_usleep(suseconds_t time_ms, t_config *config)
 {
 	while (time_ms > 0)
 	{
@@ -90,25 +91,27 @@ void improved_usleep(suseconds_t time_ms, t_config *config)
 		if (config->burnout)
 		{
 			pthread_mutex_unlock(&config->lock);
-			return;
+			return ;
 		}
 		pthread_mutex_unlock(&config->lock);
 		if (time_ms >= 100)
 			usleep(100000);
 		else
 		{
-			usleep((__useconds_t) time_ms * 1000);
-			return;
+			usleep((__useconds_t)time_ms * 1000);
+			return ;
 		}
 		time_ms -= 100;
 	}
 }
 
-void announced_wait_dongle_take(t_dongle *dongle, t_config *config, t_coder *coder)
+void	announced_wait_dongle_take(t_dongle *dongle, t_config *config,
+		t_coder *coder)
 {
 	wait_dongle_cooldown(config, dongle);
 	pthread_mutex_lock(&config->printf_lock);
 	if (!get_burnout(config))
-		printf("%u %d has taken a dongle\n", get_process_time(config), coder->id);
+		printf("%u %d has taken a dongle\n", get_process_time(config),
+			coder->id);
 	pthread_mutex_unlock(&config->printf_lock);
 }
