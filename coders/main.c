@@ -16,37 +16,23 @@
 #include <stdlib.h>
 #include <sys/time.h>
 
-static int	create_coders(t_coder *coders, t_config *config)
+static int create_coders(t_coder *coders, t_config *config)
 {
-	int		i;
-	t_coder	*first;
+	int i;
 
-	first = coders;
 	i = 0;
-	while (i < config->number_of_coders)
+	while (i++ < config->number_of_coders)
 	{
 		if (pthread_create(&coders->thread, NULL, thread_work, coders))
 			return ((coders->thread = 0), 1);
-		if (i + 2 < config->number_of_coders)
-			coders = ((t_coder *)(coders->next))->next;
-		i += 2;
-	}
-	coders = first->next;
-	i = 1;
-	while (i < config->number_of_coders)
-	{
-		if (pthread_create(&coders->thread, NULL, thread_work, coders))
-			return ((coders->thread = 0), 1);
-		if (i + 2 < config->number_of_coders)
-			coders = ((t_coder *)(coders->next))->next;
-		i += 2;
+		coders = (coders->next);
 	}
 	return (0);
 }
 
-static void	join_pthread(t_coder *coders, t_config *config)
+static void join_pthread(t_coder *coders, t_config *config)
 {
-	int	i;
+	int i;
 
 	i = 0;
 	while (i++ < config->number_of_coders)
@@ -59,29 +45,27 @@ static void	join_pthread(t_coder *coders, t_config *config)
 		pthread_join(config->monitor, NULL);
 }
 
-static void	start_pthread(t_coder *coders, t_config *config)
+static void start_pthread(t_coder *coders, t_config *config)
 {
 	if (pthread_create(&config->monitor, NULL, burnout_checker, coders))
 	{
 		config->burnout = 1;
-		fprintf(stderr, "%s\n",
-			"An error occured during pthread initialization");
+		fprintf(stderr, "%s\n", "An error occured during pthread initialization");
 	}
 	else
 	{
 		if (create_coders(coders, config))
 		{
 			config->burnout = 1;
-			fprintf(stderr, "%s\n",
-				"An error occured during pthread initialization");
+			fprintf(stderr, "%s\n", "An error occured during pthread initialization");
 		}
 	}
 }
 
-int	main(int ac, char **av)
+int main(int ac, char **av)
 {
-	t_config	*config;
-	t_coder		*coders;
+	t_config *config;
+	t_coder  *coders;
 
 	config = parsing(ac, av);
 	if (!config)
@@ -90,8 +74,7 @@ int	main(int ac, char **av)
 	if (!coders)
 	{
 		destroy(coders, config);
-		fprintf(stderr, "%s\n",
-			"An error occurred during coders initialization");
+		fprintf(stderr, "%s\n", "An error occurred during coders initialization");
 		return (1);
 	}
 	start_pthread(coders, config);

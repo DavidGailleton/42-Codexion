@@ -125,7 +125,7 @@ int       has_priority(t_coder *coder, t_config *config, t_dongle *dongle);
 t_dongle *create_dongle(int id);
 void      improved_usleep(suseconds_t time_ms, t_config *config);
 void announced_wait_dongle_take(t_dongle *dongle, t_config *config, t_coder *coder);
-int  get_last_compile(t_coder *coder);
+long get_last_compile(t_coder *coder);
 void wait_start(t_config *config);
 
 #endif
