@@ -16,7 +16,7 @@
 #include <sys/time.h>
 #include <unistd.h>
 
-static void burned_out(t_config *config, t_coder *coder)
+static void	burned_out(t_config *config, t_coder *coder)
 {
 	set_burnout(config, 1);
 	pthread_mutex_lock(&config->printf_lock);
@@ -24,26 +24,26 @@ static void burned_out(t_config *config, t_coder *coder)
 	pthread_mutex_unlock(&config->printf_lock);
 }
 
-void wait_start(t_config *config)
+void	wait_start(t_config *config)
 {
 	while (1)
 	{
 		pthread_mutex_lock(&config->lock);
 		if (config->start)
-			break;
+			break ;
 		pthread_mutex_unlock(&config->lock);
 		usleep(100);
 	}
 	pthread_mutex_unlock(&config->lock);
 }
 
-void *burnout_checker(void *arg)
+void	*burnout_checker(void *arg)
 {
-	t_coder  *coders;
-	t_config *config;
-	int       i;
+	t_coder		*coders;
+	t_config	*config;
+	int			i;
 
-	coders = (t_coder *) arg;
+	coders = (t_coder *)arg;
 	config = coders->config;
 	i = 0;
 	wait_start(config);
@@ -51,7 +51,8 @@ void *burnout_checker(void *arg)
 	{
 		if (remain_compile(config, coders) > 0)
 			i = 0;
-		if (get_remain_before_burnout(config, coders) <= 0 && remain_compile(config, coders) > 0)
+		if (get_remain_before_burnout(config, coders) <= 0
+			&& remain_compile(config, coders) > 0)
 		{
 			burned_out(config, coders);
 			return (NULL);

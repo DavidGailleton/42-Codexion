@@ -18,9 +18,9 @@
 #include <time.h>
 #include <unistd.h>
 
-static int request_dongle(t_coder *coder, t_dongle *dongle, t_config *config)
+static int	request_dongle(t_coder *coder, t_dongle *dongle, t_config *config)
 {
-	struct timespec abs_burnout_t;
+	struct timespec	abs_burnout_t;
 
 	if (!dongle)
 		return (0);
@@ -28,7 +28,8 @@ static int request_dongle(t_coder *coder, t_dongle *dongle, t_config *config)
 	pthread_mutex_lock(&dongle->lock);
 	while (!has_priority(coder, config, dongle))
 	{
-		if (pthread_cond_timedwait(&dongle->cond, &dongle->lock, &abs_burnout_t) == ETIMEDOUT)
+		if (pthread_cond_timedwait(&dongle->cond, &dongle->lock,
+				&abs_burnout_t) == ETIMEDOUT)
 		{
 			pthread_mutex_unlock(&dongle->lock);
 			return (0);
@@ -39,10 +40,10 @@ static int request_dongle(t_coder *coder, t_dongle *dongle, t_config *config)
 	return (!get_burnout(config));
 }
 
-static void release_dongle(t_dongle *dongle, t_config *config)
+static void	release_dongle(t_dongle *dongle, t_config *config)
 {
 	if (!dongle)
-		return;
+		return ;
 	pthread_mutex_lock(&dongle->lock);
 	dongle->last_release = get_process_time(config);
 	dongle->owner = NULL;
@@ -50,10 +51,10 @@ static void release_dongle(t_dongle *dongle, t_config *config)
 	pthread_mutex_unlock(&dongle->lock);
 }
 
-static int request_dongles(t_coder *coder, t_config *config)
+static int	request_dongles(t_coder *coder, t_config *config)
 {
-	t_dongle *first;
-	t_dongle *second;
+	t_dongle	*first;
+	t_dongle	*second;
 
 	if (coder->id % 2)
 	{
@@ -77,9 +78,10 @@ static int request_dongles(t_coder *coder, t_config *config)
 	return (0);
 }
 
-static void *work_loop(t_coder *coder, t_config *config)
+static void	*work_loop(t_coder *coder, t_config *config)
 {
-	while (coder->total_compile < config->number_of_compiles_required && !get_burnout(config))
+	while (coder->total_compile < config->number_of_compiles_required
+		&& !get_burnout(config))
 	{
 		if (!request_dongles(coder, config))
 			return (NULL);
@@ -96,14 +98,14 @@ static void *work_loop(t_coder *coder, t_config *config)
 	return (coder);
 }
 
-void *thread_work(void *arg)
+void	*thread_work(void *arg)
 {
-	t_coder  *coder;
-	t_config *config;
+	t_coder		*coder;
+	t_config	*config;
 
 	coder = NULL;
 	config = NULL;
-	coder = (t_coder *) arg;
+	coder = (t_coder *)arg;
 	if (!coder)
 		return (NULL);
 	config = coder->config;

@@ -16,7 +16,7 @@
 #include <sys/time.h>
 #include <unistd.h>
 
-void compiling(t_coder *coder, t_config *config)
+void	compiling(t_coder *coder, t_config *config)
 {
 	pthread_mutex_lock(&coder->lock);
 	coder->last_compile = get_process_time(config);
@@ -29,7 +29,7 @@ void compiling(t_coder *coder, t_config *config)
 	improved_usleep(config->time_to_compile, config);
 }
 
-void refactoring(t_coder *coder, t_config *config)
+void	refactoring(t_coder *coder, t_config *config)
 {
 	pthread_mutex_lock(&config->printf_lock);
 	if (!get_burnout(config))
@@ -38,7 +38,7 @@ void refactoring(t_coder *coder, t_config *config)
 	improved_usleep(config->time_to_refactor, config);
 }
 
-void debugging(t_coder *coder, t_config *config)
+void	debugging(t_coder *coder, t_config *config)
 {
 	pthread_mutex_lock(&config->printf_lock);
 	if (!get_burnout(config))
